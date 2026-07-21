@@ -1,0 +1,14 @@
+{
+  "terminal.integrated.defaultProfile.windows": "python",
+  "terminal.integrated.enablePersistentSessions": true,
+  "terminal.integrated.fontFamily": "Consolas, 'Microsoft JhengHei', monospace",
+  "terminal.integrated.fontSize": 18,
+  "editor.fontSize": 18,
+  "editor.lineHeight": 1.8,
+  // ── 編碼設定 ──────────────────────────────────
+  // 專案所有檔案預設使用 UTF-8
+  "files.encoding": "utf8",
+  // 自動偵測 BOM（讓 VS Code 自動識別 UTF-8 BOM 檔案）
+  "files.autoGuessEncoding": true,
+  "markdown.preview.fontFamily": "'Microsoft JhengHei', 'PingFang TC', sans-serif"
+}
