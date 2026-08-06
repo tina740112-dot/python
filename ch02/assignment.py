@@ -1,0 +1,9 @@
+x=5
+y=x
+print(id(x),id(y))#id()顯示記憶體的位址
+x=3+y
+print(id(x))
+a,b=2,3
+print(id(a),id(b))
+a,b=b,a
+print(id(a),id(b))
