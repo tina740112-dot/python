@@ -22,3 +22,4 @@ if item=='3':
   for name, score in name_age:
     print(f"{name}:{score}", end="   ")
   
+123
