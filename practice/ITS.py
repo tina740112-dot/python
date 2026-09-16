@@ -1,3 +1,6 @@
+from heapq import merge
+
+
 x=0
 while x<5:
   x+=1
@@ -27,4 +30,7 @@ def petStore(category, species, breed="Unknown"):
 
 petStore(breed="Maltese", species="Canine", category="dog")
 #############################
-int("hello")
+S=['A', 'B', 'C']
+print("-".join(["a", "b", "c"]))
+
+
