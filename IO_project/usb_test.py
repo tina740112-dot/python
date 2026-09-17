@@ -1,6 +1,6 @@
 import subprocess
 def start_usb_test():
-  result=subprocess.run(
+  before_result=subprocess.run(
     ['powershell','-Command','get-PnpDevice -PresentOnly -Class USB'],
     #取得 Windows 的 PnP 裝置
     # -PresentOnly 只顯示目前存在的裝置
@@ -12,9 +12,13 @@ def start_usb_test():
     #PowerShell 的輸出被 Python 抓回來之後，可以用不同形式處理。在這裡我們用str輸出。
     encoding='big5'#指定抓回來的文字編碼為 big5,正確解碼中文字
     )
+####Wait usb connection
+
   print('starting USB Test')
-  print(result.stdout)#現在把抓回來的正常輸出拿出來
+  print(before_result.stdout)#現在把抓回來的正常輸出拿出來
   #stdout=standard output
+  input('please insert USB Device ,then press enter')
+
 #start_usb_test()#呼叫並執行函式
 
 
