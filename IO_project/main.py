@@ -25,6 +25,10 @@ try:
     print('Invalid option')
 except ValueError:
   print('Invalid option')
+  
+####Wait usb connection
+user=input('please insert USB Device ,then press enter')
+
 
 
 
