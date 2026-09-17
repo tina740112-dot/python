@@ -1,3 +1,4 @@
+import subprocess
 def start_usb_test():
   print('starting USB Test')
 
