@@ -61,8 +61,12 @@ def start_usb_test():
   
   if new_ids:                       #new_ids 是不是有新的 USB 裝置
     print("New USB device detected")
+    for new_usb in new_ids:
+      print("New USB device detected:", new_usb)
   else:
     print("no New USB")
+    
+
   
 #練習
 # def show_name(name):
