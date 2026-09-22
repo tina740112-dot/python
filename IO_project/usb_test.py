@@ -63,12 +63,12 @@ def start_usb_test():
     print("New USB device detected")
     for new_usb in new_ids:
       print("New USB device detected:", new_usb)
-    command = f'Get-PnpDevice -InstancdId"{new_usb}"'
+      command = f'Get-PnpDevice -InstanceId"{new_usb}"'
   else:
     print("no New USB")
   
   device_result = subprocess.run(
-    ['powershell','-command','command']
+    ['powershell','-command',command],
     capture_output=True,
     text=True,
     encoding='big5'
