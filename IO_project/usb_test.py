@@ -20,11 +20,13 @@ def start_usb_test():
 
   before_lines = before_result.stdout.splitlines()  #把 before_result 裡面的標準輸出 stdout，依照每一行切開，然後存                                                 進before_lines。
   
-  #for item in before_lines:
+  #for item in before_lines:先不要顯示每一行的 InstanceId因為太長，所以註解掉
     #if 'InstanceId' in item:
     #  print(item)
     
-
+  before_ids=set(before_lines)
+  print('before:',before_ids) #將 before_lines 轉換成 set
+  
   print('Starting first USB Test')
   print(before_result.stdout)                      #現在把抓回來的值正常輸出拿出來
                                                    #stdout=standard output
@@ -43,12 +45,25 @@ def start_usb_test():
     encoding='big5'
   )
   after_lines = after_result.stdout.splitlines()  #把 after_result 裡面的標準輸出 stdout，依照每一行切開，然後存                                                 進after_lines。
+  
+  after_ids=set(after_lines)
+  print('after:',after_ids)
+    
   print('starting second USB Test')
   print(after_result.stdout)#現在把抓回來的正常輸出拿出來
   #stdout=standard output
   #start_usb_test()#呼叫並執行函式
-
-
+  
+###########before and after 差集並印出新的 USB 裝置連接###########
+  new_ids=after_ids-before_ids
+  print(new_ids)
+  
+  
+  if new_ids:                       #new_ids 是不是有新的 USB 裝置
+    print("New USB device detected")
+  else:
+    print("no New USB")
+  
 #練習
 # def show_name(name):
 #   print('name:',name)
