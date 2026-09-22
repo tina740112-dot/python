@@ -4,7 +4,7 @@ def start_usb_test():
   before_result=subprocess.run(
     ['powershell',
     '-Command',
-    '(Get-PnpDevice -PresentOnly -Class USB ).InstanceId'
+    '(Get-PnpDevice -PresentOnly -Class USB).InstanceId'
 ],
 
 
