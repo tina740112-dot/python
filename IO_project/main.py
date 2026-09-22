@@ -13,7 +13,7 @@ elif os_name=='Linux':
   print('Linux System Detected')
 else:
   print('Unsupported System')
-################usb test
+################usb test#######################
 try:
   user=int(input('Please select usb option 1/2:'))
   if user==1:

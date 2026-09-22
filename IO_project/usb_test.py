@@ -2,7 +2,12 @@ import subprocess
 def start_usb_test():
   ##############第一次確認未插入usb的狀況##########################
   before_result=subprocess.run(
-    ['powershell','-Command','get-PnpDevice -PresentOnly -Class USB'],
+    ['powershell',
+    '-Command',
+    'Get-PnpDevice -PresentOnly -Class USB | Select-Object Status,Class,FriendlyName,InstanceId | Format-List'
+],
+
+
     #取得 Windows 的 PnP 裝置
     # -PresentOnly 只顯示目前存在的裝置
     # -Class USB 只顯示 USB 類別的裝置
@@ -14,16 +19,20 @@ def start_usb_test():
     encoding='big5'#指定抓回來的文字編碼為 big5,正確解碼中文字
     )
 
+  before_lines = before_result.stdout.splitlines()#把 before_result 裡面的標準輸出 stdout，依照每一行切開，然後存進 before_lines。
+
   print('Starting first USB Test')
   print(before_result.stdout)#現在把抓回來的值正常輸出拿出來
  #stdout=standard output
 
- ##################Wait usb connection#############################
-  input('please insert USB Device ,then press enter')#執行
+ ##################Wait usb connection############################# 
+  input('please insert USB Device ,then press enter')#執行第二次usb測試，要插入USB裝置
   
 #################執行第二次usb裝置連接#######################
   after_result=subprocess.run(#第二次插入usb狀況
-    ['powershell','-Command','get-PnpDevice -PresentOnly -Class USB'],
+    ['powershell',
+    '-Command',
+    'Get-PnpDevice -PresentOnly -Class USB | Select-Object Status,Class,FriendlyName,InstanceId | Format-List'],
     capture_output=True,
     text=True,
     encoding='big5'
