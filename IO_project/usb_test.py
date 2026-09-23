@@ -69,13 +69,26 @@ def start_usb_test():
               ['powershell','-command',command],
               capture_output=True,
               text=True,
-              encoding='big5',             
+              encoding='big5'            
       )
       print(device_result.stdout)
 
   else:
     print("no New USB")
-  
+    
+disk_command = 'Get-Disk | Where-Object {$_.BusType -eq "USB"}'
+                          #使用 PowerShell 指令取得目前所有 USB 磁碟裝置
+disk_result = subprocess.run(
+      ['powershell',
+      '-Command',
+      disk_command
+      ],
+      capture_output=True,
+      text=True,
+      encoding='big5'
+    )
+print(disk_result.stdout)
+    
       
     
 
