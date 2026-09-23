@@ -68,6 +68,7 @@ def start_usb_test():
       device_result = subprocess.run(
               ['powershell','-command',command],
               capture_output=True,
+          
               text=True,
               encoding='big5'            
       )
@@ -76,7 +77,7 @@ def start_usb_test():
   else:
     print("no New USB")
     
-  disk_command = 'Get-Disk | Where-Object {$_.BusType -eq "USB"}'
+  disk_command = 'Get-Disk | Where-Object {$_.BusType -eq "USB"} | Format-List FriendlyName,BusType,SerialNumber,Size'
                               #使用 PowerShell 指令取得目前所有 USB 磁碟裝置
   disk_result = subprocess.run(
           ['powershell',
@@ -88,6 +89,45 @@ def start_usb_test():
           encoding='big5'
         )
   print(disk_result.stdout)
+  
+  disk_lines=disk_result.stdout.splitlines()  #把 disk_result 裡面的標準輸出 stdout，依照每一行切開，然後存進 disk_lines。
+  
+  print(disk_lines)
+  
+  for item in disk_lines:
+    if'FriendlyName'in item:
+      print(item)
+      
+  for item1 in disk_lines:
+      if'Size'in item1:
+        print(item1)
+        print(item1.split(':'))
+        
+        usb_size=item1.split(':')[1].strip()
+        print(usb_size)
+        
+        usb_size=int(usb_size)
+        print(f'USB Size:{usb_size/(1024**3):.2f}GB')
+        
+  USBvolume_command='(Get-Disk | Where-Object {$_.BusType -eq "USB"} | Get-Partition | Get-Volume).DriveLetter'
+  
+  USBvolume_result=subprocess.run(
+    ['powershell',
+    '-command',
+    USBvolume_command
+    ],
+    capture_output=True,        #把結果抓回來
+    text=True,                  #我要文字
+    encoding='big5'             #這個文字用 Big5規則解讀
+    
+  )
+    
+    
+  
+  
+  
+  
+
     
       
     
