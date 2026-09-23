@@ -109,19 +109,28 @@ def start_usb_test():
         usb_size=int(usb_size)
         print(f'USB Size:{usb_size/(1024**3):.2f}GB')
         
-  USBvolume_command='(Get-Disk | Where-Object {$_.BusType -eq "USB"} | Get-Partition | Get-Volume).DriveLetter'
+  driveletter_command='(Get-Disk | Where-Object {$_.BusType -eq "USB"} | Get-Partition | Get-Volume).DriveLetter'
   
-  USBvolume_result=subprocess.run(
+  driveletter_result=subprocess.run(
     ['powershell',
     '-command',
-    USBvolume_command
+    driveletter_command
     ],
     capture_output=True,        #把結果抓回來
     text=True,                  #我要文字
     encoding='big5'             #這個文字用 Big5規則解讀
     
   )
+  print(f'Driver letter : {driveletter_result.stdout.strip()}:')
     
+  location_command = "(Get-PnpDeviceProperty -InstanceId 'USB\\VID_125F&PID_DD1A\\2572306450170002' -KeyName 'DEVPKEY_Device_LocationInfo').Data"
+  
+  location_result=subprocess.run(
+    ['powershell',
+     '-command',
+     ]
+    
+  )
     
   
   
