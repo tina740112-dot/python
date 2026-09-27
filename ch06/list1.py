@@ -1,0 +1,12 @@
+lst1=[11,22,33,44,55,66,77,88,99]
+print(lst1)
+print(lst1[0])
+print(lst1[2:6])
+print(lst1[:6])
+print(lst1[0:9])
+print(lst1[1:9:2])
+print(lst1[1::2])
+print(lst1[-9])
+print(lst1[-6:-3])
+print(lst1[:-2])#從-9開始算
+print(lst1[10])#報錯，超過範圍

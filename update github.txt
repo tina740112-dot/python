@@ -1,0 +1,13 @@
+# 第一次新專案建置同步github步驟
+git init # 初始化建立.git資料夾變成 Git Repository(儲存庫/版本資料夾)
+git add . # 加入所有檔案
+git commit -m "Initial commit" # 建立第一個版本
+git branch -M main # 把目前的分支重新命名為 main
+git remote add origin https://github.com/使用者帳號/Repository名稱(儲存庫/版本資料夾).git # 連接 GitHub帳號，建立Repository
+git push -u origin main # 把 main 分支推送到 GitHub
+
+# 後續專案更新同步至github步驟
+git status # 檢查目前 Git 狀態
+git add . # 把目前所有修改加入暫存區（Stage），如果單獨檔案把" ."換成檔案名稱
+git commit -m "訊息修改" # 建立一個新的版本(Commit) " "中間文字是訊息，隨版本修改
+git push # 把本機的 Commit 上傳到 GitHubcd

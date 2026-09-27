@@ -1,0 +1,9 @@
+print("tuple=元組，看起來不是以()確認型態，以逗號來確認型態，tuple1是以逗號結尾的數字25，tuple2是以括號包住的數字25，tuple3是以括號包住的數字25但沒有逗號，tuple4是單純的數字25。")
+tuple1=25,
+tuple2=(25,)
+tuple3=(25)
+tuple4=25
+print(type(tuple1))
+print(type(tuple2))
+print(type(tuple3))
+print(type(tuple4))
