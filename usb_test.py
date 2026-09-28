@@ -1,4 +1,5 @@
 import subprocess
+import time
 def start_usb_test():
   ##############第一次確認未插入usb的狀況##########################
   before_result=subprocess.run(#Python 叫外部程式subprocess.run去做事。
@@ -33,7 +34,7 @@ def start_usb_test():
 
  ##################Wait usb connection############################# 
   input('please insert USB Device ,then press enter')#執行第二次usb測試，要插入USB裝置
-  
+  time.sleep(3) #等待 3 秒，讓使用者有時間插入 USB 裝置
 #################執行第二次usb裝置連接#######################
   after_result=subprocess.run(#第二次插入usb狀況
     ['powershell',
@@ -100,11 +101,11 @@ def start_usb_test():
       
   for item1 in disk_lines:
       if'Size'in item1:
-        print(item1)
-        print(item1.split(':'))
+        #print(item1)
+        #print(item1.split(':'))
         
         usb_size=item1.split(':')[1].strip()
-        print(usb_size)
+        #print(usb_size)
         
         usb_size=int(usb_size)
         print(f'USB Size:{usb_size/(1024**3):.2f}GB')
@@ -123,7 +124,7 @@ def start_usb_test():
     encoding='big5'             #這個文字用 Big5規則解讀
     
   )
-  print(f'Driver letter : {driveletter_result.stdout.strip()}:')
+  print(f'Drive letter : {driveletter_result.stdout.strip()}:')
 
   #############################顯示 USB 磁碟的磁碟代號 (Drive Letter)##########################
     
@@ -134,6 +135,7 @@ def start_usb_test():
      '-command',
      location_command
      ],
+
      capture_output=True,
      text=True,
      encoding='big5'
@@ -148,13 +150,33 @@ def start_usb_test():
   file.write('test write')# 寫資料
   file.close() # 關閉檔案
 
+  try:
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt',"w")#開啟/建立檔案
+    file.write('test write')# 寫資料
+    file.close() # 關閉檔案
+    print('Write test : Pass')
+  except IOError:             
+    print("Write Test : FAIL")
+
   ###################讀取測試檔案內容##########################
 
   file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt',"r")# 打開 USB 裡的檔案
   read_data=file.read()#把 file 裡面的內容讀出來，存進 read_data。
   file.close() #檔案用完，關掉
-  print(read_data) #把剛才讀到的內容顯示給我看
-  
+  #print(read_data) #把剛才讀到的內容顯示給我看
+
+  try:
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt',"r")# 打開 USB 裡的檔案
+    read_data=file.read()#把 file 裡面的內容讀出來，存進 read_data。
+    file.close() #檔案用完，關掉
+    print("Read Test : PASS")  #讀取成功
+  except IOError:
+    print("Read Test : FAIL")
+################################讀取出來的資料跟寫入的資料進行驗證##########################
+  if read_data=='test write':
+    print("Data Verify Test : PASS")
+  else:
+    print("Data Verify Test : FAIL")
   
   
 
