@@ -59,7 +59,7 @@ def start_usb_test():
   print(new_ids)
   
   
-  if new_ids:                       #new_ids 是不是有新的 USB 裝置
+  if new_ids:        #new_ids 是不是有新的 USB 裝置
     print("New USB device detected")
     for new_usb in new_ids:
       print("New USB device detected:", new_usb)
@@ -100,15 +100,16 @@ def start_usb_test():
       
   for item1 in disk_lines:
       if'Size'in item1:
-        print(item1)
-        print(item1.split(':'))
+        #print(item1)
+        #print(item1.split(':'))
         
         usb_size=item1.split(':')[1].strip()
-        print(usb_size)
+       #print(usb_size)
         
         usb_size=int(usb_size)
         print(f'USB Size:{usb_size/(1024**3):.2f}GB')
-        
+
+ ########顯示裝置是什麼槽       
   driveletter_command='(Get-Disk | Where-Object {$_.BusType -eq "USB"} | Get-Partition | Get-Volume).DriveLetter'
   
   driveletter_result=subprocess.run(
@@ -121,17 +122,51 @@ def start_usb_test():
     encoding='big5'             #這個文字用 Big5規則解讀
     
   )
-  print(f'Driver letter : {driveletter_result.stdout.strip()}:')
-    
+  print(f'Drive letter : {driveletter_result.stdout.strip()}:')
+
+  ###############裝置的位置  
   location_command = "(Get-PnpDeviceProperty -InstanceId 'USB\\VID_125F&PID_DD1A\\2572306450170002' -KeyName 'DEVPKEY_Device_LocationInfo').Data"
   
   location_result=subprocess.run(
     ['powershell',
      '-command',
-     ]
-    
+     location_command
+     ],
+
+    capture_output=True,
+    text=True,
+    encoding='big5'
+
   )
-    
+  print(location_result.stdout.strip())
+  
+#######write test#############
+  try:
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','w')#開啟/建立write_test.txt檔案
+    file.write("write test")#內容寫write test
+    file.close()#檔案關閉
+    print('Write Test : PASS')
+  except IOError:
+    print('Write Test : Fail')
+
+  ########read test#########
+  try:
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','r')
+    read_data=file.read()# 把檔案內容讀出來
+    file.close()
+    print('Read Test : Pass')
+  except IOError as error:
+    print('Read test : Fail')
+    print(error)
+########### Check if read and write data are the same
+  if read_data == 'write test':
+    print('Verify test : Pass')
+  else:
+    print('Verify test : Fail')
+
+
+
+
   
   
   
