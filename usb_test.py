@@ -172,11 +172,13 @@ def start_usb_test():
     print("Read Test : PASS")  #讀取成功
   except IOError:
     print("Read Test : FAIL")
-################################讀取出來的資料跟寫入的資料進行驗證##########################
+##############讀取出來的資料跟寫入的資料進行驗證##########################
   if read_data=='test write':
     print("Data Verify Test : PASS")
   else:
     print("Data Verify Test : FAIL")
+
+#############測試讀取寫入速度##########################
   
   
 
