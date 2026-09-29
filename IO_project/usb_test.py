@@ -6,7 +6,7 @@ def start_usb_test():
   disk_number_result=subprocess.run(
     ['powershell',
     '-Command',
-    '(Get-Disk | Where-Object {$_.BusType -eq "USB"}).Number)'
+    '(Get-Disk | Where-Object {$_.BusType -eq "USB"}).Number'
 ],
 
 
