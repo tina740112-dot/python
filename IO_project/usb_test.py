@@ -1,11 +1,12 @@
+from os import write
 import subprocess
 import time
 def start_usb_test():
   ##############第一次確認未插入usb的狀況##########################
-  before_result=subprocess.run(
+  disk_number_result=subprocess.run(
     ['powershell',
     '-Command',
-    '(Get-PnpDevice -PresentOnly -Class USB).InstanceId'
+    '(Get-Disk | Where-Object {$_.BusType -eq "USB"}).Number)'
 ],
 
 
@@ -19,17 +20,18 @@ def start_usb_test():
     encoding='big5'     #指定抓回來的文字編碼為 big5,正確解碼中文字
     )
 
-  before_lines = before_result.stdout.splitlines()  #把 before_result 裡面的標準輸出 stdout，依照每一行切開，然後存                                                 進before_lines。
-  
-  #for item in before_lines:先不要顯示每一行的 InstanceId因為太長，所以註解掉
+  disk_numbers = disk_number_result.stdout.splitlines()  #把 before_result 裡面的標準輸出 stdout，依照每一行切開，然後存                                                 進before_lines。
+  print(disk_numbers)
+  return
+  #for item in disk_numbers:先不要顯示每一行的 InstanceId因為太長，所以註解掉
     #if 'InstanceId' in item:
     #  print(item)
     
-  before_ids=set(before_lines)
+  before_ids=set(disk_numbers)
   print('before:',before_ids) #將 before_lines 轉換成 set
   
   print('Starting first USB Test')
-  print(before_result.stdout)                      #現在把抓回來的值正常輸出拿出來
+  print(disk_number_result.stdout)                      #現在把抓回來的值正常輸出拿出來
                                                    #stdout=standard output
 
  ##################Wait usb connection############################# 
@@ -142,46 +144,55 @@ def start_usb_test():
   print(location_result.stdout.strip())
   
 #######write test#############
-  try:
-    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','wb')#開啟/建立write_test.txt檔案
-    test_data=b'A'*(20*1024*1024) # ① 先準備 20 MB
-    start_time =time.perf_counter() # ② 效能計數器開始計時 
-                                  #()=呼叫計數器=碼表功能，取得開始寫入檔案的效能計時器數值
-    file.write(test_data)# ③ 寫入 20 MB內容寫變數test data
-    file.close()#檔案關閉
-    end_time = time.perf_counter()# ④ 結束計時
-                                  #()=呼叫計數器=碼表功能，取得結束寫入檔案的效能計時器數值
-    elapsed_time = end_time - start_time   # ⑤ 算經過時間
-    write_speed = 20/elapsed_time# ⑥ 計算寫入速度
-    print('Write Test : PASS')
-    print(f'Write Elapsed Time: {elapsed_time:.6f} seconds')
-    print(f'Write Speed: {write_speed:.2f}MB/s') # 
+  write_speeds=[]
+  read_speeds=[]
+ 
+  for i in range(3):  # 進行三次測試
+    try:
+      file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','wb')#開啟/建立write_test.txt檔案
+      test_data=b'A'*(20*1024*1024) # ① 先準備 20 MB
+      start_time =time.perf_counter() # ② 效能計數器開始計時 
+                                    #()=呼叫計數器=碼表功能，取得開始寫入檔案的效能計時器數值
+      file.write(test_data)# ③ 寫入 20 MB內容寫變數test data
+      file.close()#檔案關閉
+      end_time = time.perf_counter()# ④ 結束計時
+                                    #()=呼叫計數器=碼表功能，取得結束寫入檔案的效能計時器數值
+      elapsed_time = end_time - start_time   # ⑤ 算經過時間
+      write_speed = 20/elapsed_time# ⑥ 計算寫入速度
+      write_speeds.append(write_speed)
+      print('Write Test : PASS')
+      print(f'Write Elapsed Time: {elapsed_time:.6f} seconds')
+      print(f'Write Speed: {write_speed:.2f}MB/s')
     
-  except IOError:
-    print('Write Test : Fail')
+    except IOError:
+      print('Write Test : Fail')
 
   ########read test#########
-  try:
-    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','rb')
-    read_start_time =time.perf_counter()
-    read_data=file.read()# 把檔案內容讀出來
-    file.close()
-    read_end_time =time.perf_counter()
-    print('Read Test : Pass')
-    read_elapsed_time = read_end_time-read_start_time
-    read_speed=20/read_elapsed_time
-    print(f'Read Elapsed Time : {read_elapsed_time:.6f}seconds')
-    print(f'Read Speed : {read_speed:.2f}MB/s')
-    
-  except IOError as error:
-    print('Read test : Fail')
-    print(error)
-########### Verify test:Check if read and write data are the same
-  if read_data == test_data :
-    print('Verify test : Pass')
-  else:
-    print('Verify test : Fail')
 
+    try:
+      file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','rb')
+      read_start_time =time.perf_counter()
+      read_data=file.read()# 把檔案內容讀出來
+      file.close()
+      read_end_time =time.perf_counter()
+      print('Read Test : Pass')
+      read_elapsed_time = read_end_time-read_start_time
+      read_speed=20/read_elapsed_time
+      read_speeds.append(read_speed)
+      print(f'Read Elapsed Time : {read_elapsed_time:.6f}seconds')
+      print(f'Read Speed : {read_speed:.2f}MB/s')
+      
+    except IOError as error:
+      print('Read test : Fail')
+      print(error)
+########### Verify test:Check if read and write data are the same
+    if read_data == test_data :
+      print('Verify test : Pass')
+    else:
+      print('Verify test : Fail')
+
+  print(write_speeds)
+  print(read_speeds)
 
 
 
