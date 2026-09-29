@@ -1,4 +1,5 @@
 import subprocess
+import time
 def start_usb_test():
   ##############第一次確認未插入usb的狀況##########################
   before_result=subprocess.run(
@@ -142,24 +143,41 @@ def start_usb_test():
   
 #######write test#############
   try:
-    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','w')#開啟/建立write_test.txt檔案
-    file.write("write test")#內容寫write test
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','wb')#開啟/建立write_test.txt檔案
+    test_data=b'A'*(20*1024*1024) # ① 先準備 20 MB
+    start_time =time.perf_counter() # ② 效能計數器開始計時 
+                                  #()=呼叫計數器=碼表功能，取得開始寫入檔案的效能計時器數值
+    file.write(test_data)# ③ 寫入 20 MB內容寫變數test data
     file.close()#檔案關閉
+    end_time = time.perf_counter()# ④ 結束計時
+                                  #()=呼叫計數器=碼表功能，取得結束寫入檔案的效能計時器數值
+    elapsed_time = end_time - start_time   # ⑤ 算經過時間
+    write_speed = 20/elapsed_time# ⑥ 計算寫入速度
     print('Write Test : PASS')
+    print(f'Write Elapsed Time: {elapsed_time:.6f} seconds')
+    print(f'Write Speed: {write_speed:.2f}MB/s') # 
+    
   except IOError:
     print('Write Test : Fail')
 
   ########read test#########
   try:
-    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','r')
+    file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','rb')
+    read_start_time =time.perf_counter()
     read_data=file.read()# 把檔案內容讀出來
     file.close()
+    read_end_time =time.perf_counter()
     print('Read Test : Pass')
+    read_elapsed_time = read_end_time-read_start_time
+    read_speed=20/read_elapsed_time
+    print(f'Read Elapsed Time : {read_elapsed_time:.6f}seconds')
+    print(f'Read Speed : {read_speed:.2f}MB/s')
+    
   except IOError as error:
     print('Read test : Fail')
     print(error)
-########### Check if read and write data are the same
-  if read_data == 'write test':
+########### Verify test:Check if read and write data are the same
+  if read_data == test_data :
     print('Verify test : Pass')
   else:
     print('Verify test : Fail')
