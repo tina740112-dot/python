@@ -38,14 +38,125 @@ def start_usb_test():
       )
       #print(driveletter_result.stdout.strip())
       driveletter=driveletter_result.stdout.strip()
-      print('Disk Number:',item)
-      print('Drive Letter:',driveletter)
       print(f'{driveletter}:\\write_test.txt')
-      
   return
  
     
+  before_ids=set(disk_numbers)
+  print('before:',before_ids) #將 before_lines 轉換成 set
   
+  print('Starting first USB Test')
+  print(disk_number_result.stdout)                      #現在把抓回來的值正常輸出拿出來
+                                                   #stdout=standard output
+
+ ##################Wait usb connection############################# 
+  input('please insert USB Device ,then press enter')#執行第二次usb測試，要插入USB裝置
+  
+#################執行第二次usb裝置連接#######################
+  after_result=subprocess.run(#第二次插入usb狀況
+    ['powershell',
+    '-Command',
+    '(Get-PnpDevice -PresentOnly -Class USB).InstanceId'
+    ],
+    capture_output=True,
+    text=True,
+    encoding='big5'
+  )
+  after_lines = after_result.stdout.splitlines()  #把 after_result 裡面的標準輸出 stdout，依照每一行切開，然後存                                                 進after_lines。
+  
+  after_ids=set(after_lines)
+  print('after:',after_ids)
+    
+  print('starting second USB Test')
+  print(after_result.stdout)#現在把抓回來的正常輸出拿出來
+  #stdout=standard output
+  #start_usb_test()#呼叫並執行函式
+  
+###########before and after 差集並印出新的 USB 裝置連接###########
+  new_ids=after_ids-before_ids
+  print(new_ids)
+  
+  
+  if new_ids:        #new_ids 是不是有新的 USB 裝置
+    print("New USB device detected")
+    for new_usb in new_ids:
+      print("New USB device detected:", new_usb)
+      command = f'Get-PnpDevice -InstanceId "{new_usb}"'
+
+      device_result = subprocess.run(
+              ['powershell','-command',command],
+              capture_output=True,
+          
+              text=True,
+              encoding='big5'            
+      )
+      print(device_result.stdout)
+
+  else:
+    print("no New USB")
+    
+  disk_command = 'Get-Disk | Where-Object {$_.BusType -eq "USB"} | Format-List FriendlyName,BusType,SerialNumber,Size'
+                              #使用 PowerShell 指令取得目前所有 USB 磁碟裝置
+  disk_result = subprocess.run(
+          ['powershell',
+          '-Command',
+          disk_command
+          ],
+          capture_output=True,
+          text=True,
+          encoding='big5'
+        )
+  print(disk_result.stdout)
+  
+  disk_lines=disk_result.stdout.splitlines()  #把 disk_result 裡面的標準輸出 stdout，依照每一行切開，然後存進 disk_lines。
+  
+  print(disk_lines)
+  
+  for item in disk_lines:
+    if'FriendlyName'in item:
+      print(item)
+      
+  for item1 in disk_lines:
+      if'Size'in item1:
+        #print(item1)
+        #print(item1.split(':'))
+        
+        usb_size=item1.split(':')[1].strip()
+       #print(usb_size)
+        
+        usb_size=int(usb_size)
+        print(f'USB Size:{usb_size/(1024**3):.2f}GB')
+
+ ########顯示裝置是什麼槽       
+  driveletter_command='(Get-Disk | Where-Object {$_.BusType -eq "USB"} | Get-Partition | Get-Volume).DriveLetter'
+  
+  driveletter_result=subprocess.run(
+    ['powershell',
+    '-command',
+    driveletter_command
+    ],
+    capture_output=True,        #把結果抓回來
+    text=True,                  #我要文字
+    encoding='big5'             #這個文字用 Big5規則解讀
+    
+  )
+  print(f'Drive letter : {driveletter_result.stdout.strip()}:')
+
+  ###############裝置的位置  
+  location_command = "(Get-PnpDeviceProperty -InstanceId 'USB\\VID_125F&PID_DD1A\\2572306450170002' -KeyName 'DEVPKEY_Device_LocationInfo').Data"
+  
+  location_result=subprocess.run(
+    ['powershell',
+     '-command',
+     location_command
+     ],
+
+    capture_output=True,
+    text=True,
+    encoding='big5'
+
+  )
+  print(location_result.stdout.strip())
   
 #######write test#############
   write_speeds=[]
