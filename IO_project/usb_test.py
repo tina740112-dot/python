@@ -1,4 +1,3 @@
-from os import write
 import subprocess
 import time
 def start_usb_test():
@@ -41,6 +40,11 @@ def start_usb_test():
       print('Disk Number:',item)
       print('Drive Letter:',driveletter)
       print(f'{driveletter}:\\write_test.txt')
+      
+      file = open(f'{driveletter}:\\write_test.txt', 'wb')
+      test_data = b'A' * (20 * 1024 * 1024)
+      file.write(test_data)
+      file.close()
       
   return
  
