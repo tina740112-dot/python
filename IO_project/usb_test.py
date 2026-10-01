@@ -40,6 +40,7 @@ def start_usb_test():
       print('Disk Number:',item)
       print('Drive Letter:',driveletter)
       #print(f'{driveletter}:\\write_test.txt')
+    try:
       file = open(f'{driveletter}:\\write_test.txt', 'wb')
       test_data = b"A" * (20 * 1024 * 1024)
 
@@ -49,9 +50,15 @@ def start_usb_test():
       file.close()
 
       end_time = time.perf_counter()
-      elapsed_time = end_time - start_time
+      elapsed_time = end_time - start_time#從寫到讀的花費時間
+
+      write_speed=20/elapsed_time#MB/s = MB ÷ 秒
+      print(f'Write Elapsed Time : { elapsed_time:.6f}second')
+      print(f'Write speed:{write_speed:.2f}MB/s')
+    except IOError:
+      print('Write test : Fail')
             
-      return
+  return
       
     
   
