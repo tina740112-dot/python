@@ -39,15 +39,20 @@ def start_usb_test():
       driveletter=driveletter_result.stdout.strip()
       print('Disk Number:',item)
       print('Drive Letter:',driveletter)
-      print(f'{driveletter}:\\write_test.txt')
-      
+      #print(f'{driveletter}:\\write_test.txt')
       file = open(f'{driveletter}:\\write_test.txt', 'wb')
-      test_data = b'A' * (20 * 1024 * 1024)
+      test_data = b"A" * (20 * 1024 * 1024)
+
+      start_time = time.perf_counter()
+
       file.write(test_data)
       file.close()
+
+      end_time = time.perf_counter()
+      elapsed_time = end_time - start_time
+            
+      return
       
-  return
- 
     
   
   
