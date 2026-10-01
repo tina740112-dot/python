@@ -56,7 +56,7 @@ def start_usb_test():
           print(f'Write Elapsed Time : { elapsed_time:.6f}second')
           print(f'Write speed:{write_speed:.2f}MB/s')
       except IOError:
-        print('Write test : Fail')
+          print('Write test : Fail')
             
   return
       
