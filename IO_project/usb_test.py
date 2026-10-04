@@ -37,46 +37,48 @@ def start_usb_test():
       )
       #print(driveletter_result.stdout.strip())
       driveletter=driveletter_result.stdout.strip()
+      print('--'*20)
       print('Disk Number:',disk_number)
       print('Drive Letter:',driveletter)
       #print(f'{driveletter}:\\write_test.txt')
-  for item in range(3):# 同一支 USB 重複測試 3 次
-      print(item+1)
-      
-      try:
-          file = open(f'{driveletter}:\\write_test.txt', 'wb')
-          test_data = b"A" * (20 * 1024 * 1024)
+      for test_number in range(3):# 同一支 USB 重複測試 3 次
+          print(test_number+1)
+       
+          
+          try:
+              file = open(f'{driveletter}:\\write_test.txt', 'wb')
+              test_data = b"A" * (20 * 1024 * 1024)
 
-          start_time = time.perf_counter()
+              start_time = time.perf_counter()
 
-          file.write(test_data)
-          file.close()
+              file.write(test_data)
+              file.close()
 
-          end_time = time.perf_counter()
-          elapsed_time = end_time - start_time#從寫到讀的花費時間
+              end_time = time.perf_counter()
+              elapsed_time = end_time - start_time#從寫到讀的花費時間
 
-          write_speed=20/elapsed_time#MB/s = MB ÷ 秒
-          print(f'Write Elapsed Time : { elapsed_time:.6f}second')
-          print(f'Write speed:{write_speed:.2f}MB/s')
-      except IOError:
-          print('Write test : Fail')
+              write_speed=20/elapsed_time#MB/s = MB ÷ 秒
+              print(f'Write Elapsed Time : { elapsed_time:.6f}second')
+              print(f'Write speed:{write_speed:.2f}MB/s')
+          except IOError:
+              print('Write test : Fail')
 
-      read_start_time=time.perf_counter()
-      read_file= open(f'{driveletter}:\\write_test.txt',"rb")#打開這支 USB 的 write_test.txt
-      read_data=read_file.read()#把內容讀出來，存進 read_data
-      read_file.close()
-      read_end_time=time.perf_counter()
+          read_start_time=time.perf_counter()
+          read_file= open(f'{driveletter}:\\write_test.txt',"rb")#打開這支 USB 的 write_test.txt
+          read_data=read_file.read()#把內容讀出來，存進 read_data
+          read_file.close()
+          read_end_time=time.perf_counter()
 
-      read_elapsed_time=read_end_time-read_start_time
-      read_speed=20/read_elapsed_time
-      print(f'read elapsed time : {read_elapsed_time:.6f}second')
-      print(f'read speed:{read_speed:.2f}MB/s')
+          read_elapsed_time=read_end_time-read_start_time
+          read_speed=20/read_elapsed_time
+          print(f'read elapsed time : {read_elapsed_time:.6f}second')
+          print(f'read speed:{read_speed:.2f}MB/s')
 
-      if test_data==read_data:
-         print('Data Verify : PASS')
-      else:
-         
-         print('Data Verify : FAIL')
+          if test_data==read_data:
+            print('Data Verify : PASS')
+          else:
+            
+            print('Data Verify : FAIL')
   return
       
     
