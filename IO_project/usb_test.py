@@ -21,9 +21,9 @@ def start_usb_test():
 
   disk_numbers = disk_number_result.stdout.splitlines()#把disk_number_result    裡面的標準輸出 stdout，依照每一行切開，然後存進disk_numbers。
   print(disk_numbers)
-  for item in disk_numbers:# 逐一取得每個 USB 的 Disk Number
-      #print(item)
-      driveletter_command = f'(Get-Partition -DiskNumber {item} | Get-Volume).DriveLetter'
+  for disk_number in disk_numbers:# 逐一取得每個 USB 的 Disk Number
+      #print(usb_number)
+      driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
       #print(driveletter_command)
       driveletter_result=subprocess.run(
         ['powershell',
@@ -37,9 +37,12 @@ def start_usb_test():
       )
       #print(driveletter_result.stdout.strip())
       driveletter=driveletter_result.stdout.strip()
-      print('Disk Number:',item)
+      print('Disk Number:',disk_number)
       print('Drive Letter:',driveletter)
       #print(f'{driveletter}:\\write_test.txt')
+  for item in range(3):# 同一支 USB 重複測試 3 次
+      print(item+1)
+      
       try:
           file = open(f'{driveletter}:\\write_test.txt', 'wb')
           test_data = b"A" * (20 * 1024 * 1024)
@@ -57,7 +60,23 @@ def start_usb_test():
           print(f'Write speed:{write_speed:.2f}MB/s')
       except IOError:
           print('Write test : Fail')
-            
+
+      read_start_time=time.perf_counter()
+      read_file= open(f'{driveletter}:\\write_test.txt',"rb")#打開這支 USB 的 write_test.txt
+      read_data=read_file.read()#把內容讀出來，存進 read_data
+      read_file.close()
+      read_end_time=time.perf_counter()
+
+      read_elapsed_time=read_end_time-read_start_time
+      read_speed=20/read_elapsed_time
+      print(f'read elapsed time : {read_elapsed_time:.6f}second')
+      print(f'read speed:{read_speed:.2f}MB/s')
+
+      if test_data==read_data:
+         print('Data Verify : PASS')
+      else:
+         
+         print('Data Verify : FAIL')
   return
       
     
