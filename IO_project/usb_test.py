@@ -40,6 +40,12 @@ def start_usb_test():
       
       #切開後的字串，即取得的磁碟機代號
       driveletter=driveletter_result.stdout.strip()
+      
+      # 確認 USB 是否仍存在
+      if driveletter == '':
+          print('USB device not found')
+          continue
+      
       test_folder = f'{driveletter}:\\Test_folder'#第一個test是資料夾的路徑名稱，第二個test是資料夾的名稱
       os.makedirs(test_folder, exist_ok=True)#建立測試資料夾，如果已存在則不會報錯
       print('--'*20)
@@ -55,6 +61,9 @@ def start_usb_test():
       # 同一支 USB 重複測試 3 次
       for test_number in range(3):
           print(test_number+1)
+          
+          if test_number == 1:
+              input(f'Please remove USB Drive {driveletter}: then press Enter...')
 
         
           try:
@@ -86,6 +95,8 @@ def start_usb_test():
               read_data=read_file.read()#把內容讀出來，存進 read_data
               read_file.close()
               read_end_time=time.perf_counter()
+              
+             
 
               read_elapsed_time=read_end_time-read_start_time
               read_speed=20/read_elapsed_time
@@ -109,6 +120,8 @@ def start_usb_test():
      
       if False in verify_results:
         print('Data Verify Overall : FAIL')
+      else:
+        print('Data Verify Overall : PASS')
         
       #確認write_speeds是否有缺資料       
       if len(write_speeds) !=3:
