@@ -83,8 +83,15 @@ def start_usb_test():
           else:
             
             print('Data Verify : FAIL')
+          write_speed_min = min(write_speeds)
+          write_speed_max = max(write_speeds)
+          write_speed_avg = sum(write_speeds)/len(write_speeds)
+          
 
       print(write_speeds)
+      print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
+      print(f'Write Speed Max: {write_speed_max:.2f}MB/s')
+      print(f'Write Speed Avg: {write_speed_avg:.2f}MB/s')
 
         
 
