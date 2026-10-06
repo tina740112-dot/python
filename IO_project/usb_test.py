@@ -1,5 +1,6 @@
 import subprocess
 import time
+import os
 def start_usb_test():
   disk_number_result=subprocess.run(
     ['powershell',
@@ -37,18 +38,21 @@ def start_usb_test():
       )
       #print(driveletter_result.stdout.strip())
       driveletter=driveletter_result.stdout.strip()
+      test_folder = f'{driveletter}:\\Test_folder'#第一個test是資料夾的路徑名稱，第二個test是資料夾的名稱
+      os.makedirs(test_folder, exist_ok=True)#建立測試資料夾，如果已存在則不會報錯
       print('--'*20)
       print('Disk Number:',disk_number)
       print('Drive Letter:',driveletter)
       #print(f'{driveletter}:\\write_test.txt')
 
       write_speeds=[]
+      read_speeds=[]
       for test_number in range(3):# 同一支 USB 重複測試 3 次
           print(test_number+1)
 
         
           try:
-              file = open(f'{driveletter}:\\write_test.txt', 'wb')
+              file = open(f'{test_folder}\\write_test.txt', 'wb')
               test_data = b"A" * (20 * 1024 * 1024)
 
               start_time = time.perf_counter()
@@ -63,35 +67,44 @@ def start_usb_test():
               write_speeds.append(write_speed)
               print(f'Write Elapsed Time : { elapsed_time:.6f}second')
               print(f'Write speed:{write_speed:.2f}MB/s')
-          except IOError:
-              print('Write test : Fail')
+          except IOError as e:
+              print('Write test : Fail', e)
     
 
-          read_start_time=time.perf_counter()
-          read_file= open(f'{driveletter}:\\write_test.txt',"rb")#打開這支 USB 的 write_test.txt
-          read_data=read_file.read()#把內容讀出來，存進 read_data
-          read_file.close()
-          read_end_time=time.perf_counter()
+              read_start_time=time.perf_counter()
+              read_file= open(f'{test_folder}\\write_test.txt',"rb")#打開這支 USB 的test_folder的 write_test.txt
+              read_data=read_file.read()#把內容讀出來，存進 read_data
+              read_file.close()
+              read_end_time=time.perf_counter()
 
-          read_elapsed_time=read_end_time-read_start_time
-          read_speed=20/read_elapsed_time
-          print(f'read elapsed time : {read_elapsed_time:.6f}second')
-          print(f'read speed:{read_speed:.2f}MB/s')
+              read_elapsed_time=read_end_time-read_start_time
+              read_speed=20/read_elapsed_time
+              read_speeds.append(read_speed)
+              print(f'read elapsed time : {read_elapsed_time:.6f}second')
+              print(f'read speed:{read_speed:.2f}MB/s')
 
-          if test_data==read_data:
-            print('Data Verify : PASS')
-          else:
-            
-            print('Data Verify : FAIL')
-          write_speed_min = min(write_speeds)
-          write_speed_max = max(write_speeds)
-          write_speed_avg = sum(write_speeds)/len(write_speeds)
+              if test_data==read_data:
+                print('Data Verify : PASS')
+              else:
+                
+                print('Data Verify : FAIL')
+              write_speed_min = min(write_speeds)
+              write_speed_max = max(write_speeds)
+              write_speed_avg = sum(write_speeds)/len(write_speeds)
+              read_speed_min = min(read_speeds)
+              read_speed_max = max(read_speeds)
+              read_speed_avg = sum(read_speeds)/len(read_speeds)
+              
           
 
-      print(write_speeds)
-      print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
-      print(f'Write Speed Max: {write_speed_max:.2f}MB/s')
-      print(f'Write Speed Avg: {write_speed_avg:.2f}MB/s')
+              print(write_speeds)
+              print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
+              print(f'Write Speed Max: {write_speed_max:.2f}MB/s')
+              print(f'Write Speed Avg: {write_speed_avg:.2f}MB/s')
+              print(read_speeds)
+              print(f'Read Speed Min: {read_speed_min:.2f}MB/s')
+              print(f'Read Speed Max: {read_speed_max:.2f}MB/s')
+              print(f'Read Speed Avg: {read_speed_avg:.2f}MB/s')
 
         
 
@@ -107,7 +120,7 @@ def start_usb_test():
  
   for i in range(3):  # 進行三次測試
     try:
-      file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','wb')#開啟/建立write_test.txt檔案
+      file=open(f'{test_folder}\\write_test.txt','wb')#開啟/建立write_test.txt檔案
       test_data=b'A'*(20*1024*1024) # ① 先準備 20 MB
       start_time =time.perf_counter() # ② 效能計數器開始計時 
                                     #()=呼叫計數器=碼表功能，取得開始寫入檔案的效能計時器數值
@@ -128,7 +141,7 @@ def start_usb_test():
   ########read test#########
 
     try:
-      file=open(f'{driveletter_result.stdout.strip()}:\\write_test.txt','rb')
+      file=open(f'{test_folder}\\write_test.txt','rb')
       read_start_time =time.perf_counter()
       read_data=file.read()# 把檔案內容讀出來
       file.close()
