@@ -67,44 +67,45 @@ def start_usb_test():
               write_speeds.append(write_speed)
               print(f'Write Elapsed Time : { elapsed_time:.6f}second')
               print(f'Write speed:{write_speed:.2f}MB/s')
-          except IOError as e:
-              print('Write test : Fail', e)
+          except IOError :
+              print('Write test : Fail')
     
 
-              read_start_time=time.perf_counter()
-              read_file= open(f'{test_folder}\\write_test.txt',"rb")#打開這支 USB 的test_folder的 write_test.txt
-              read_data=read_file.read()#把內容讀出來，存進 read_data
-              read_file.close()
-              read_end_time=time.perf_counter()
+          read_start_time=time.perf_counter()
+          read_file= open(f'{test_folder}\\write_test.txt',"rb")#打開這支 USB 的test_folder的 write_test.txt
+          read_data=read_file.read()#把內容讀出來，存進 read_data
+          read_file.close()
+          read_end_time=time.perf_counter()
 
-              read_elapsed_time=read_end_time-read_start_time
-              read_speed=20/read_elapsed_time
-              read_speeds.append(read_speed)
-              print(f'read elapsed time : {read_elapsed_time:.6f}second')
-              print(f'read speed:{read_speed:.2f}MB/s')
+          read_elapsed_time=read_end_time-read_start_time
+          read_speed=20/read_elapsed_time
+          read_speeds.append(read_speed)
+          print(f'read elapsed time : {read_elapsed_time:.6f}second')
+          print(f'read speed:{read_speed:.2f}MB/s')
 
-              if test_data==read_data:
-                print('Data Verify : PASS')
-              else:
-                
-                print('Data Verify : FAIL')
-              write_speed_min = min(write_speeds)
-              write_speed_max = max(write_speeds)
-              write_speed_avg = sum(write_speeds)/len(write_speeds)
-              read_speed_min = min(read_speeds)
-              read_speed_max = max(read_speeds)
-              read_speed_avg = sum(read_speeds)/len(read_speeds)
-              
-          
+          if test_data==read_data:
+            print('Data Verify : PASS')
+          else:
+            
+            print('Data Verify : FAIL')
+      write_speed_min = min(write_speeds)
+      write_speed_max = max(write_speeds)
+      write_speed_avg = sum(write_speeds)/len(write_speeds)
+      read_speed_min = min(read_speeds)
+      read_speed_max = max(read_speeds)
+      read_speed_avg = sum(read_speeds)/len(read_speeds)
+      
+      print(write_speeds)
+      print(read_speeds)
 
-              print(write_speeds)
-              print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
-              print(f'Write Speed Max: {write_speed_max:.2f}MB/s')
-              print(f'Write Speed Avg: {write_speed_avg:.2f}MB/s')
-              print(read_speeds)
-              print(f'Read Speed Min: {read_speed_min:.2f}MB/s')
-              print(f'Read Speed Max: {read_speed_max:.2f}MB/s')
-              print(f'Read Speed Avg: {read_speed_avg:.2f}MB/s')
+
+      print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
+      print(f'Write Speed Max: {write_speed_max:.2f}MB/s')
+      print(f'Write Speed Avg: {write_speed_avg:.2f}MB/s')
+      print(read_speeds)
+      print(f'Read Speed Min: {read_speed_min:.2f}MB/s')
+      print(f'Read Speed Max: {read_speed_max:.2f}MB/s')
+      print(f'Read Speed Avg: {read_speed_avg:.2f}MB/s')
 
         
 
