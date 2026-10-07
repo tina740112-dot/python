@@ -62,9 +62,7 @@ def start_usb_test():
       for test_number in range(3):
           print(test_number+1)
           
-          if test_number == 1:
-              input(f'Please remove USB Drive {driveletter}: then press Enter...')
-
+          
         
           try:
               file = open(f'{test_folder}\\write_test.txt', 'wb')
@@ -118,7 +116,7 @@ def start_usb_test():
           verify_results.append(test_data == read_data)
           
      
-      if False in verify_results:
+      if False in verify_results  or len(verify_results) != 3:
         print('Data Verify Overall : FAIL')
       else:
         print('Data Verify Overall : PASS')
