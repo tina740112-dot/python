@@ -124,11 +124,14 @@ def start_usb_test():
       #確認write_speeds是否有缺資料       
       if len(write_speeds) !=3:
         print('Write Test : FAIL')
+        print('ALL Tests : FAIL')
+        
         continue
       
       #確認read_speeds是否是否有缺資料    
       if len(read_speeds) !=3:
         print('Read Test : FAIL')
+        print('ALL Tests : FAIL')
         continue
             
       write_speed_min = min(write_speeds)
@@ -141,6 +144,14 @@ def start_usb_test():
       
       #print(write_speeds)
       #print(read_speeds)
+      
+      if(len(write_speeds)==3 
+         and len(read_speeds)==3 
+         and len(verify_results)==3 
+         and False not in verify_results):
+        print('All Tests : PASS')
+      else:
+        print('All Tests : FAIL')
 
       print('**'*20)
       print(f'Write Speed Min: {write_speed_min:.2f}MB/s')
