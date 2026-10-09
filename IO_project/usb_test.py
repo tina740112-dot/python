@@ -2,6 +2,7 @@ import subprocess
 import time
 import os
 import csv
+from datetime import datetime
 
 def start_usb_test():
   
@@ -15,7 +16,7 @@ def start_usb_test():
     writer=csv.writer(f)
     # 如果 CSV 檔案不存在，寫入標題列
     if not file_exists:
-      writer.writerow(['Drive','write Avg','read Avg','Result'])
+      writer.writerow(['Test Time','Drive','write Avg','read Avg','Result'])
   
   disk_number_result=subprocess.run(
     ['powershell',
@@ -39,6 +40,8 @@ def start_usb_test():
   print(disk_numbers)
   for disk_number in disk_numbers:# 逐一取得每個 USB 的 Disk Number
       #print(usb_number)
+
+      test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
       #print(driveletter_command)
       driveletter_result=subprocess.run(
@@ -140,6 +143,10 @@ def start_usb_test():
       if len(write_speeds) !=3:
         print('Write Test : FAIL')
         print('ALL Tests : FAIL')
+
+        with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
+           writer=csv.writer(f)
+           writer.writerow([test_time,driveletter,'','','FAIL'])
         
         continue
       
@@ -147,6 +154,9 @@ def start_usb_test():
       if len(read_speeds) !=3:
         print('Read Test : FAIL')
         print('ALL Tests : FAIL')
+        with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
+           writer=csv.writer(f)
+           writer.writerow([test_time,driveletter,'','','FAIL'])
         continue
             
       write_speed_min = min(write_speeds)
@@ -181,7 +191,7 @@ def start_usb_test():
       
       with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
          writer=csv.writer(f)
-         writer.writerow([driveletter,write_speed_avg,read_speed_avg,result])
+         writer.writerow([test_time,driveletter,f'{write_speed_avg:.2f}',f'{read_speed_avg:.2f}',result])
       
       
       
