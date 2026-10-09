@@ -164,8 +164,10 @@ def start_usb_test():
          and len(read_speeds)==3 
          and len(verify_results)==3 
          and False not in verify_results):
+        result = 'PASS'
         print('All Tests : PASS')
       else:
+        result = 'FAIL'
         print('All Tests : FAIL')
 
       print('**'*20)
@@ -177,7 +179,9 @@ def start_usb_test():
       print(f'Read Speed Max: {read_speed_max:.2f}MB/s')
       print(f'Read Speed Avg: {read_speed_avg:.2f}MB/s')
       
-      with.open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
+      with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
+         writer=csv.writer(f)
+         writer.writerow([driveletter,write_speed_avg,read_speed_avg,result])
       
       
       
