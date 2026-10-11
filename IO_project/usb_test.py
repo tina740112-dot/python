@@ -39,7 +39,7 @@ def start_usb_test():
   disk_numbers = disk_number_result.stdout.splitlines()
   print(disk_numbers)
   for disk_number in disk_numbers:# 逐一取得每個 USB 的 Disk Number
-      #print(usb_number)
+      #print('DEBUG Disk:', disk_number)
 
       test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
@@ -58,14 +58,27 @@ def start_usb_test():
       
       #切開後的字串，即取得的磁碟機代號
       driveletter=driveletter_result.stdout.strip()
+      print('DEBUG Drive Letter:', repr(driveletter))
       
-      # 確認 USB 是否仍存在
+      # 確認 USB 是否仍存在, 如果不在
       if driveletter == '':
           print('USB device not found')
           continue
+
       
       test_folder = f'{driveletter}:\\Test_folder'#第一個test是資料夾的路徑名稱，第二個test是資料夾的名稱
-      os.makedirs(test_folder, exist_ok=True)#建立測試資料夾，如果已存在則不會報錯
+      try:
+        os.makedirs(test_folder, exist_ok=True)#建立測試資料夾，如果已存在則不會報錯
+      except OSError:
+         print('Create Test Folder : FAIL')
+
+         with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
+          writer=csv.writer(f)
+          writer.writerow([test_time,driveletter,'','','FAIL'])
+      continue
+
+
+
       print('--'*20)
       print('Disk Number:',disk_number)
       print('Drive Letter:',driveletter)
