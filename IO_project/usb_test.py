@@ -58,7 +58,7 @@ def start_usb_test():
       
       #切開後的字串，即取得的磁碟機代號
       driveletter=driveletter_result.stdout.strip()
-      print('DEBUG Drive Letter:', repr(driveletter))
+      #print('DEBUG Drive Letter:', repr(driveletter))
       
       # 確認 USB 是否仍存在, 如果不在
       if driveletter == '':
@@ -75,7 +75,7 @@ def start_usb_test():
          with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
           writer=csv.writer(f)
           writer.writerow([test_time,driveletter,'','','FAIL'])
-      continue
+          continue
 
 
 
