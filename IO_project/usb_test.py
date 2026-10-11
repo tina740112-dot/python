@@ -5,11 +5,27 @@ import csv
 from datetime import datetime
 
 def start_usb_test():
-  
-  # 把檔案名稱存進 csv_file 變數
-  csv_file = 'usb_test_results.csv'
+
+  #取得目前 Python 程式的完整路徑
+  app_folder = os.path.dirname(os.path.abspath(__file__))
+
+  #取得程式所在資料夾
+  #join把資料夾路徑和檔案名稱組合成一個完整路徑。
+  log_folder = os.path.join(app_folder, 'Logs')
+
+  #組合資料夾或檔案路徑
+  os.makedirs(log_folder, exist_ok=True)
+
+  #join把資料夾路徑和檔案名稱組合成一個完整路徑。
+  csv_file = os.path.join(log_folder, 'usb_test_results.csv')
+
   # 檢查 CSV 檔案是否存在，如果不存在則建立並寫入標題列
   file_exists = os.path.isfile(csv_file)
+
+  
+ 
+  
+
   
   with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
     # 建立 CSV 寫入器
@@ -160,6 +176,14 @@ def start_usb_test():
         with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
            writer=csv.writer(f)
            writer.writerow([test_time,driveletter,'','','FAIL'])
+
+        test_file=os.path.join(test_folder,'write_test.txt')
+
+        try:
+           if os.path.isfile(test_file):
+              os.remove(test_file)
+        except OSError:
+           print('Cleanup Test File:Fail')
         
         continue
       
@@ -170,6 +194,15 @@ def start_usb_test():
         with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
            writer=csv.writer(f)
            writer.writerow([test_time,driveletter,'','','FAIL'])
+        # 清理 USB 測試檔案
+        test_file = os.path.join(test_folder, 'write_test.txt')
+
+        try:
+            if os.path.isfile(test_file):
+                os.remove(test_file)
+        except OSError:
+            print('Cleanup Test File : FAIL')
+
         continue
             
       write_speed_min = min(write_speeds)
@@ -205,7 +238,16 @@ def start_usb_test():
       with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
          writer=csv.writer(f)
          writer.writerow([test_time,driveletter,f'{write_speed_avg:.2f}',f'{read_speed_avg:.2f}',result])
-      
+
+      # 刪除本次 USB 測試產生的檔案
+      #join把資料夾路徑和檔案名稱組合成一個完整路徑。
+      test_file = os.path.join(test_folder, 'write_test.txt')
+
+      #確認檔案存在
+      if os.path.isfile(test_file):
+              #真正刪除檔案
+              os.remove(test_file)
+                
       
       
       
