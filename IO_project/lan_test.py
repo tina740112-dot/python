@@ -19,8 +19,9 @@ def start_lan_test():
  
     print(ping_test_result.stdout)#印出測試過程
     
-    text='已遺失 = 0'
-    lost_text=text.split('=')[1].strip()#將text分割成list，取列表的[1]=0
+    text=ping_test_result.stdout
+    lost_text=text.split('已遺失 = ')[1].strip()[0]#將text分割成list，取列表的[1]=0
+    print(lost_text)
     lost_number=int(lost_text)
     
     #判斷已遺失是不是=0
