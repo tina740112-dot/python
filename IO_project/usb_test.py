@@ -16,7 +16,7 @@ def start_usb_test():
   #組合資料夾或檔案路徑
   os.makedirs(log_folder, exist_ok=True)
 
-  #join把資料夾路徑和檔案名稱組合成一個完整路徑。
+  #join把建立測試資料夾資料夾路徑和檔案名稱組合成一個完整路徑。
   csv_file = os.path.join(log_folder, 'usb_test_results.csv')
 
   # 檢查 CSV 檔案是否存在，如果不存在則建立並寫入標題列
@@ -32,7 +32,7 @@ def start_usb_test():
     writer=csv.writer(f)
     # 如果 CSV 檔案不存在，寫入標題列
     if not file_exists:
-      writer.writerow(['Test Time','Drive','write Avg','read Avg','Result'])
+      writer.writerow(['Test Time','USB Name','Drive','write Avg','read Avg','Result'])
   
   disk_number_result=subprocess.run(
     ['powershell',
@@ -54,8 +54,28 @@ def start_usb_test():
 #把disk_number_result    裡面的標準輸出 stdout，依照每一行切開，然後存進disk_numbers。
   disk_numbers = disk_number_result.stdout.splitlines()
   print(disk_numbers)
-  for disk_number in disk_numbers:# 逐一取得每個 USB 的 Disk Number
+  
+  # 逐一取得每個 USB 的 Disk Number
+  for disk_number in disk_numbers:
       #print('DEBUG Disk:', disk_number)
+      
+      # 取得 USB 的 品牌品稱FriendlyName，用來辨識 USB 裝置
+      usbname_command = f'(Get-Disk -Number {disk_number}).FriendlyName'
+      
+      usbname_result=subprocess.run(
+        ['powershell',
+         '-Command',
+         usbname_command
+         ],
+        capture_output=True,
+        text=True,
+        encoding='big5'
+      )
+      # 取得 USB 的 FriendlyName 後，可以用來辨識 USB 裝置
+      usbname=usbname_result.stdout.strip()
+      print('--'*20)
+      print('USB Name:',usbname)
+      
 
       test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
       driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
@@ -90,12 +110,10 @@ def start_usb_test():
 
          with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
           writer=csv.writer(f)
-          writer.writerow([test_time,driveletter,'','','FAIL'])
+          writer.writerow([test_time,usbname,driveletter,'','','FAIL'])
           continue
 
 
-
-      print('--'*20)
       print('Disk Number:',disk_number)
       print('Drive Letter:',driveletter)
       #print(f'{driveletter}:\\write_test.txt')
@@ -115,13 +133,16 @@ def start_usb_test():
               file = open(f'{test_folder}\\write_test.txt', 'wb')
               test_data = b"A" * (20 * 1024 * 1024)
 
-              start_time = time.perf_counter()
+              # 開始寫入測試的時間
+              write_start_time = time.perf_counter()
 
               file.write(test_data)
+              file.flush()  # 把 Python 的寫入緩衝資料送給作業系統。
+              os.fsync(file.fileno())  # 要求作業系統同步檔案資料到儲存裝置。
               file.close()
 
               end_time = time.perf_counter()
-              elapsed_time = end_time - start_time#從寫到讀的花費時間
+              elapsed_time = end_time - write_start_time#從寫到讀的花費時間
 
               write_speed=20/elapsed_time#MB/s = MB ÷ 秒
               write_speeds.append(write_speed)
@@ -175,7 +196,7 @@ def start_usb_test():
 
         with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
            writer=csv.writer(f)
-           writer.writerow([test_time,driveletter,'','','FAIL'])
+           writer.writerow([test_time,usbname,driveletter,'','','FAIL'])
 
         test_file=os.path.join(test_folder,'write_test.txt')
 
@@ -193,7 +214,7 @@ def start_usb_test():
         print('ALL Tests : FAIL')
         with open(csv_file,mode='a',newline='',encoding='utf-8-sig')as f:
            writer=csv.writer(f)
-           writer.writerow([test_time,driveletter,'','','FAIL'])
+           writer.writerow([test_time,usbname,driveletter,'','','FAIL'])
         # 清理 USB 測試檔案
         test_file = os.path.join(test_folder, 'write_test.txt')
 
@@ -237,7 +258,7 @@ def start_usb_test():
       
       with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
          writer=csv.writer(f)
-         writer.writerow([test_time,driveletter,f'{write_speed_avg:.2f}',f'{read_speed_avg:.2f}',result])
+         writer.writerow([test_time,usbname,driveletter,f'{write_speed_avg:.2f}',f'{read_speed_avg:.2f}',result])
 
       # 刪除本次 USB 測試產生的檔案
       #join把資料夾路徑和檔案名稱組合成一個完整路徑。
