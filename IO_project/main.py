@@ -1,6 +1,9 @@
 import platform#載入platform工具
 ##呼叫usb_test 進來
 from usb_test import start_usb_test #從 usb_test.py 匯入 start_usb_test 函式
+from lan_test import start_lan_test #從 lan_test.py 匯入 start_lan_test 函式
+
+
 
 print("===Peripheral Test Tool===")
 #platform.system()platform的system確認作業系統
@@ -13,19 +16,23 @@ elif os_name=='Linux':
   print('Linux System Detected')
 else:
   print('Unsupported System')
-################usb test#######################
+################ test list#######################
 try:
-  user=int(input('Please select usb option 1/2:'))
+  print('1:USB Test\n'
+        '2:LAN Test')
+  user=int(input('Please select option 1/2:'))
   if user==1:
     #print('Starting USB Test')
     start_usb_test()#呼叫usb_test
   elif user==2:
-    print('Exit')
+    start_lan_test()#呼叫lan_test
   else:
     print('Invalid option')
 except ValueError:
   print('Invalid option')
   
+
+
 
 
 
