@@ -55,6 +55,11 @@ def start_usb_test():
   disk_numbers = disk_number_result.stdout.splitlines()
   print(disk_numbers)
   
+  if disk_numbers==[]:
+      print('No USB disks found')
+      print('Please insert a USB drive.')
+      return
+    
   # 逐一取得每個 USB 的 Disk Number
   for disk_number in disk_numbers:
       #print('DEBUG Disk:', disk_number)
