@@ -25,7 +25,7 @@ try:
         '3:LAN Stress Test')
  
   user=int(input('Please select option 1/2/3:'))
-  print('**'*20)#空行分隔選單與輸入提示
+  print('**'*30)#空行分隔選單與輸入提示
   if user==1:
     print('USB Test Selected')
     start_usb_test()#呼叫usb_test

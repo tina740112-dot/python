@@ -53,7 +53,7 @@ def start_usb_test():
 
 #把disk_number_result    裡面的標準輸出 stdout，依照每一行切開，然後存進disk_numbers。
   disk_numbers = disk_number_result.stdout.splitlines()
-  print(disk_numbers)
+  #print(disk_numbers)
   
   if disk_numbers==[]:
       print('No USB disks found')

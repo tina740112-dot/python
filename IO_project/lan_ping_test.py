@@ -14,19 +14,54 @@ def get_lan_adapter():
    # print(get_lan_adapter_list)
    
     lan_no=0 #網卡編號從0開始
+    
+    lan_list=[]#將網卡資訊'存'入列表
+    
     for index, item in enumerate(get_lan_adapter_list, start=1):#讓網卡有編號
         
         if item.strip()==''or item.strip().startswith('---')or item.strip().startswith('Name'):#如果這一行去掉空白後，什麼都沒有或者是---標題行
-            continue#就跳過
+            
+            continue#就跳過這一行
+        
         lan_no += 1#網卡編號加1
+        
         print(f"{lan_no}: {item}")
         
-    user_input = input('please select the LAN adapter: ')
+        lan_list.append(item)#將網卡資訊'加'入列表
+        
+        
+            
+    
+    print('--'*30)
+    
+    while True:#USER防呆迴圈
+        
+        try:
+        
+            user_input = int(input('Please select the LAN adapter: '))
+        
+            if user_input > len(lan_list) or user_input <= 0 : #USER防呆
+                
+                print('Invalid LAN adapter number')
+                
+                continue #輸入錯誤 → 執行 continue，重新輸入。
+            break #輸入正確 → 跳過 if，執行 break，離開迴圈。
+            
+        except ValueError:
+            
+            print('Please enter a number')
+            
+            
+            
+        
+    Select_lan=lan_list[user_input-1]
+    
+    print(Select_lan)
             
 
 def start_lan_test():
 
-    print("===LAN Test===")
+    print("======LAN Ping Test======")
     
     target_ip =input('Please enter the  IP address: ')
     
