@@ -4,7 +4,7 @@ import csv
 import subprocess
 
 def get_lan_adapter():
-    get_lan_adapter_result=subprocess.run(['powershell', '-command', 'Get-NetAdapter | Select-Object Name, InterfaceDescription'],
+    get_lan_adapter_result=subprocess.run(['powershell', '-command', 'Get-NetAdapter | Select-Object Name, InterfaceDescription, status'],
                    capture_output=True,
                    text=True,
                    )
@@ -50,16 +50,44 @@ def get_lan_adapter():
         except ValueError:
             
             print('Please enter a number')
-            
-            
-            
-        
-    Select_lan=lan_list[user_input-1]
-    
-    print(Select_lan)
-            
 
+    #USER選擇的網卡資訊
+    Select_lan=lan_list[user_input-1]
+    #印出USER選擇的網卡資訊
+    print(Select_lan)
+    
+    #判斷USER選擇的網卡是否啟用
+    while True:
+        if 'Up' in Select_lan:
+            print("Selected LAN adapter is up")
+            break
+        else:
+            print("提醒:Selected LAN adapter is down!!!!!!!!!!!!!!!!!!!!")
+            print("Please check the LAN connection")
+        
+    #如果選擇的網卡是關閉狀態，提示用戶選擇操作
+        try:
+            print("1:Retry")
+            print("2:Cancel")
+            
+            User_input_2 = int(input('Please select option: '))
+            if User_input_2 == 1:
+                print("Retry Select lan driver") # Add the action for option 1 here
+                pass
+            elif User_input_2 == 2:
+                # Add the action for option 2 here
+                pass
+            break
+        except ValueError:
+            print('Please enter a number')
+   
+        
+    
+   
+            
+##############PING TEST
 def start_lan_test():
+    
 
     print("======LAN Ping Test======")
     
