@@ -19,27 +19,34 @@ elif os_name=='Linux':
 else:
   print('Unsupported System')
 ################ test list#######################
-try:
-  print('1:USB Test\n'
-        '2:LAN Ping Test\n'
-        '3:LAN Stress Test')
+while True:
+      try:
+        print('1:USB Test\n'
+              '2:LAN Ping Test\n'
+              '3:LAN Stress Test')
  
-  user=int(input('Please select option 1/2/3:'))
-  print('**'*30)#空行分隔選單與輸入提示
-  if user==1:
-    print('USB Test Selected')
-    start_usb_test()#呼叫usb_test
-  elif user==2:
-    print('LAN Ping Test Selected\n')
-    get_lan_adapter()#呼叫get_lan_adapter
-    start_lan_test()#呼叫lan_test
-  elif user==3:
-    start_lan_stress_test()# 呼叫 LAN Stress Test 函式（假設函式名稱為 start_lan_stress_test）
-  else:
-    print('Invalid option')
-except ValueError:
-  print('Invalid option')
-  
+        user=int(input('Please select option 1/2/3:'))
+        print('**'*30)#空行分隔選單與輸入提示
+        
+        if user==1:
+          print('USB Test Selected')
+          start_usb_test()#呼叫usb_test
+          
+        elif user==2:
+          print('LAN Ping Test Selected\n')
+          lan_result = get_lan_adapter()#使用者取消，不執行 Ping
+          if lan_result is not False:#繼續執行 Ping
+            start_lan_test()#呼叫lan_test
+          
+        elif user==3:
+          start_lan_stress_test()# 呼叫 LAN Stress Test 函式（假設函式名稱為 start_lan_stress_test）
+          
+        else:
+          print('Invalid option')
+          
+      except ValueError:
+        print('Invalid option')
+      
 
   
 

@@ -4,7 +4,7 @@ import csv
 import subprocess
 
 def get_lan_adapter():
-    get_lan_adapter_result=subprocess.run(['powershell', '-command', 'Get-NetAdapter | Select-Object Name, InterfaceDescription, status'],
+    get_lan_adapter_result=subprocess.run(['powershell', '-command', 'Get-NetAdapter | Select-Object Name, InterfaceDescription, status,ifindex | Out-String -Width 200'],
                    capture_output=True,
                    text=True,
                    )
@@ -42,8 +42,9 @@ def get_lan_adapter():
         
             if user_input > len(lan_list) or user_input <= 0 : #USER防呆
                 
-                print('Invalid LAN adapter number')
                 
+                print('Invalid LAN adapter number')
+              
                 continue #輸入錯誤 → 執行 continue，重新輸入。
             break #輸入正確 → 跳過 if，執行 break，離開迴圈。
             
@@ -53,11 +54,15 @@ def get_lan_adapter():
 
     #USER選擇的網卡資訊
     Select_lan=lan_list[user_input-1]
+    Select_lan_index = int(Select_lan.split()[-1])
+    
+    
     #印出USER選擇的網卡資訊
-    print(Select_lan)
+    print(Select_lan_index)
     
     #判斷USER選擇的網卡是否啟用
     while True:
+        
         if 'Up' in Select_lan:
             print("Selected LAN adapter is up")
             break
@@ -67,17 +72,36 @@ def get_lan_adapter():
         
     #如果選擇的網卡是關閉狀態，提示用戶選擇操作
         try:
-            print("1:Retry")
-            print("2:Cancel")
+            print("1:Retry\n"
+                  "2:Cancel")
             
             User_input_2 = int(input('Please select option: '))
             if User_input_2 == 1:
-                print("Retry Select lan driver") # Add the action for option 1 here
-                pass
+
+                get_lan_adapter_result=subprocess.run(['powershell', '-command', f'Get-NetAdapter -InterfaceIndex {Select_lan_index}| Select-Object Name,InterfaceDescription, status,ifindex | Out-String -Width 200'],
+                                                                   capture_output=True,
+                                                                   text=True,
+                                                                   )
+                
+                print(get_lan_adapter_result.stdout)
+                #print(get_lan_adapter_result.stderr)開啟錯誤訊息
+                
+                if 'Up' in get_lan_adapter_result.stdout:
+                    print("LAN adapter is Up")
+                    
+                    break#有連線跳出迴圈
+                
+                else:
+                
+                    print("Retry Select lan driver") # Add the action for option 1 here
+                
+                    continue
+            
             elif User_input_2 == 2:
                 # Add the action for option 2 here
-                pass
-            break
+                print('Cancel Lan Test')
+            return False
+        
         except ValueError:
             print('Please enter a number')
    

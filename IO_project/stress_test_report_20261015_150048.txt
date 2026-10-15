@@ -1,0 +1,8 @@
+=== LAN Stress Test Report ===
+Test Time       : 2026-10-15 15:00:48
+Duration (s)    : 5
+Total Rounds    : 50
+Min Round Time  : 0.1000 s
+Max Round Time  : 0.1010 s
+Avg Round Time  : 0.1005 s
+===============================
