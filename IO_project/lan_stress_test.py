@@ -8,9 +8,12 @@ def start_lan_stress_test():
     start_now = time.time()
     end_time = start_now + minutes_to_seconds
     
+    #取得現在時間，存到變數
+    rount_start = time.time()
+    
     count = 0
     durations = []
     
-    #只要現在的時間還沒超過 end_time，就一直重複執行底下的程式碼」。
-    while time.time():
+    #只要現在時間小於 end_time，就繼續跑
+    while time.time() < end_time:
         
