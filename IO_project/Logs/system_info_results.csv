@@ -1,6 +1,11 @@
-﻿Test Time,Manufacturer,Model,Serial Number,CPU,Cores/Threads,RAM(GB),OS,BIOS Version,Disks,GPU
-2026-10-19 11:48:22,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Microsoft Windows 10 專業版,J61 v03.69,Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
-2026-10-19 13:18:37,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Microsoft Windows 10 專業版,J61 v03.69,Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
-2026-10-19 14:23:29,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
-2026-10-19 14:55:13,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
-2026-10-19 15:04:42,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
+﻿Test Time,Manufacturer,Model,Serial Number,CPU,Cores/Threads,RAM(GB),RAM Details,OS,BIOS Version,Disks,GPU
+2026-10-19 15:31:08,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz,Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
+2026-10-19 15:34:43,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz; Samsung              M393B2G70BH0-YK0   16GB 1600MHz,Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
+2026-10-19 15:40:46,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,"Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz",Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB
+2026-10-19 15:48:13,Hewlett-Packard,HP Z420 Workstation,SGH432Q3VC,Intel(R) Xeon(R) CPU E5-1620 0 @ 3.60GHz,4C/8T,63.9,"Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz
+ Samsung              M393B2G70BH0-YK0   16GB 1600MHz",Microsoft Windows 10 專業版,J61 v03.69,ANKEJE USB3.0 447GB [Healthy]; Apacer AS350 2TB 1908GB [Healthy],NVIDIA GeForce GTX 1060 6GB

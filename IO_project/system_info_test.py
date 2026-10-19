@@ -58,7 +58,7 @@ def _collect_windows_info(): #用PowerShell/CIM撈Windows的硬體資訊
     ram_details.append(
         f'{manufacturer} {model} {capacity_gb}GB {speed}MHz'
     )
-  ram_summary = '; '.join(ram_details)#把每條 RAM 的詳細資訊組成一個字串,
+  ram_summary = '\n '.join(ram_details)#把每條 RAM 的詳細資訊組成一個字串,
 
 
   bios = _run_powershell_json(
@@ -178,7 +178,7 @@ def start_system_info_test():
     writer = csv.writer(f)
     if not file_exists:
       writer.writerow(['Test Time', 'Manufacturer', 'Model', 'Serial Number', 'CPU',
-                        'Cores/Threads', 'RAM(GB)', 'OS', 'BIOS Version', 'Disks', 'GPU'])
+                        'Cores/Threads', 'RAM(GB)', 'RAM Details', 'OS', 'BIOS Version', 'Disks', 'GPU'])
 
   print('Collecting system hardware information...')
 
@@ -190,6 +190,7 @@ def start_system_info_test():
   cpu_name = info['cpu_name']
   cores_threads = info['cores_threads']
   ram_gb = info['ram_gb']
+  ram_summary = info.get('ram_summary', 'Unknown')
   os_caption = info['os_caption']
   bios_version = info['bios_version']
   disk_summary = info['disk_summary']
@@ -204,6 +205,7 @@ Model         : {model}
 Serial Number : {serial_number}
 CPU           : {cpu_name} ({cores_threads})
 RAM           : {ram_gb} GB
+RAM Details   : {ram_summary.replace('; ', chr(10) + '                ')}
 OS            : {os_caption}
 BIOS Version  : {bios_version}
 Disks         : {disk_summary}
@@ -214,7 +216,7 @@ GPU           : {gpu_summary}
   with open(csv_file, mode='a', newline='', encoding='utf-8-sig') as f:
     writer = csv.writer(f)
     writer.writerow([test_time, manufacturer, model, serial_number, cpu_name, cores_threads,
-                      ram_gb, os_caption, bios_version, disk_summary, gpu_summary])
+                      ram_gb, ram_summary,os_caption, bios_version, disk_summary, gpu_summary])
 
   print(f'Result saved to {csv_file}')
 
