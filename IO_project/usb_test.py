@@ -2,14 +2,84 @@ import subprocess
 import time
 import os
 import csv
+import json
+import platform
 from datetime import datetime
+from app_paths import get_app_folder
+
+IS_WINDOWS = platform.system() == 'Windows'
+
+def _detect_usb_targets_windows(): #用PowerShell列出USB隨身碟，回傳[(usbname, 'D:\\'), ...]
+  targets = []
+  disk_number_result=subprocess.run(
+    ['powershell',
+    '-Command',
+    '(Get-Disk | Where-Object {$_.BusType -eq "USB"}).Number'
+],
+    capture_output=True,
+    text=True,
+    encoding='big5'     #指定抓回來的文字編碼為 big5,正確解碼中文字
+    )
+
+  disk_numbers = disk_number_result.stdout.splitlines()
+
+  for disk_number in disk_numbers:
+      usbname_command = f'(Get-Disk -Number {disk_number}).FriendlyName'
+      usbname_result=subprocess.run(
+        ['powershell', '-Command', usbname_command],
+        capture_output=True,
+        text=True,
+        encoding='big5'
+      )
+      usbname=usbname_result.stdout.strip()
+
+      driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
+      driveletter_result=subprocess.run(
+        ['powershell', '-command', driveletter_command],
+        capture_output=True,
+        text=True,
+        encoding='big5'
+      )
+      driveletter=driveletter_result.stdout.strip()
+
+      if driveletter == '':
+          print('USB device not found')
+          continue
+
+      targets.append((usbname, f'{driveletter}:\\'))
+  return targets
+
+def _detect_usb_targets_linux(): #用lsblk找出USB隨身碟及掛載點，回傳[(usbname, mountpoint), ...]
+  targets = []
+  lsblk_result = subprocess.run(
+    ['lsblk', '-J', '-o', 'NAME,TRAN,MODEL,MOUNTPOINT,TYPE'],
+    capture_output=True,
+    text=True
+  )
+  try:
+    data = json.loads(lsblk_result.stdout)
+  except json.JSONDecodeError:
+    return targets
+
+  for device in data.get('blockdevices', []):
+    if device.get('tran') != 'usb':
+      continue
+    usbname = (device.get('model') or 'USB Device').strip()
+    partitions = device.get('children') or [device] #沒有分割區時，裝置本身就是掛載點
+    for part in partitions:
+      mountpoint = part.get('mountpoint')
+      if mountpoint:
+        targets.append((usbname, mountpoint))
+
+  if not targets:
+    print('USB device found but not mounted. Please mount the USB drive first.')
+  return targets
 
 def start_usb_test():
 
-  #取得目前 Python 程式的完整路徑
-  app_folder = os.path.dirname(os.path.abspath(__file__))
+  #取得程式（或打包後的exe）實際所在的資料夾
+  app_folder = get_app_folder()
 
-  #取得程式所在資料夾
   #join把資料夾路徑和檔案名稱組合成一個完整路徑。
   log_folder = os.path.join(app_folder, 'Logs')
 
@@ -22,92 +92,28 @@ def start_usb_test():
   # 檢查 CSV 檔案是否存在，如果不存在則建立並寫入標題列
   file_exists = os.path.isfile(csv_file)
 
-  
- 
-  
-
-  
   with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
     # 建立 CSV 寫入器
     writer=csv.writer(f)
     # 如果 CSV 檔案不存在，寫入標題列
     if not file_exists:
       writer.writerow(['Test Time','USB Name','Drive','write Avg','read Avg','Result'])
-  
-  disk_number_result=subprocess.run(
-    ['powershell',
-    '-Command',
-    '(Get-Disk | Where-Object {$_.BusType -eq "USB"}).Number'
-],
 
+  usb_targets = _detect_usb_targets_windows() if IS_WINDOWS else _detect_usb_targets_linux()
 
-                        #取得 Windows 的 PnP 裝置
-                        # -PresentOnly 只顯示目前存在的裝置
-                        # -Class USB 只顯示 USB 類別的裝置
-    capture_output=True,#capture(抓取) output(輸出)PowerShell 的輸出抓回Python,
-                        # True ：要!!開啟這個功能。
-    text=True,          #抓回來的東西，我要用「文字」處理。
-                        #PowerShell 的輸出被 Python 抓回來之後，可以用不同形式處理。在這裡我們用str輸出。
-    encoding='big5'     #指定抓回來的文字編碼為 big5,正確解碼中文字
-    )
-
-#把disk_number_result    裡面的標準輸出 stdout，依照每一行切開，然後存進disk_numbers。
-  disk_numbers = disk_number_result.stdout.splitlines()
-  #print(disk_numbers)
-  
-  if disk_numbers==[]:
+  if not usb_targets:
       print('No USB disks found')
       print('Please insert a USB drive.')
       return
-    
-  # 逐一取得每個 USB 的 Disk Number
-  for disk_number in disk_numbers:
-      #print('DEBUG Disk:', disk_number)
-      
-      # 取得 USB 的 品牌品稱FriendlyName，用來辨識 USB 裝置
-      usbname_command = f'(Get-Disk -Number {disk_number}).FriendlyName'
-      
-      usbname_result=subprocess.run(
-        ['powershell',
-         '-Command',
-         usbname_command
-         ],
-        capture_output=True,
-        text=True,
-        encoding='big5'
-      )
-      # 取得 USB 的 FriendlyName 後，可以用來辨識 USB 裝置
-      usbname=usbname_result.stdout.strip()
+
+  # 逐一測試每個偵測到的 USB 裝置
+  for usbname, driveletter in usb_targets:
       print('--'*20)
       print('USB Name:',usbname)
-      
 
       test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-      driveletter_command = f'(Get-Partition -DiskNumber {disk_number} | Get-Volume).DriveLetter'
-      #print(driveletter_command)
-      driveletter_result=subprocess.run(
-        ['powershell',
-         '-command',
-         driveletter_command
-         ],
-        capture_output=True,
-        text=True,
-        encoding='big5'
-        
-      )
-      #print(driveletter_result.stdout.strip())
-      
-      #切開後的字串，即取得的磁碟機代號
-      driveletter=driveletter_result.stdout.strip()
-      #print('DEBUG Drive Letter:', repr(driveletter))
-      
-      # 確認 USB 是否仍存在, 如果不在
-      if driveletter == '':
-          print('USB device not found')
-          continue
 
-      
-      test_folder = f'{driveletter}:\\Test_folder'#第一個test是資料夾的路徑名稱，第二個test是資料夾的名稱
+      test_folder = os.path.join(driveletter, 'Test_folder')
       try:
         os.makedirs(test_folder, exist_ok=True)#建立測試資料夾，如果已存在則不會報錯
       except OSError:
@@ -119,9 +125,7 @@ def start_usb_test():
           continue
 
 
-      print('Disk Number:',disk_number)
-      print('Drive Letter:',driveletter)
-      #print(f'{driveletter}:\\write_test.txt')
+      print('Drive:',driveletter)
       
       #建立測試資料夾
       write_speeds=[]
@@ -135,7 +139,7 @@ def start_usb_test():
           
         
           try:
-              file = open(f'{test_folder}\\write_test.txt', 'wb')
+              file = open(os.path.join(test_folder, 'write_test.txt'), 'wb')
               test_data = b"A" * (20 * 1024 * 1024)
 
               # 開始寫入測試的時間
@@ -162,7 +166,7 @@ def start_usb_test():
           read_start_time=time.perf_counter()
           try:
               #打開這支 USB 的test_folder的 write_test.txt
-              read_file= open(f'{test_folder}\\write_test.txt',"rb")
+              read_file= open(os.path.join(test_folder, 'write_test.txt'),"rb")
               read_data=read_file.read()#把內容讀出來，存進 read_data
               read_file.close()
               read_end_time=time.perf_counter()
