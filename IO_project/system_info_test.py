@@ -40,6 +40,26 @@ def _collect_windows_info(): #用PowerShell/CIM撈Windows的硬體資訊
   computer_system = _run_powershell_json(
       'Get-CimInstance Win32_ComputerSystem | Select-Object Manufacturer,Model,TotalPhysicalMemory | ConvertTo-Json'
   ) or {}
+  
+  ram = _run_powershell_json(
+    'Get-CimInstance Win32_PhysicalMemory | Select-Object Manufacturer,PartNumber,Capacity,Speed | ConvertTo-Json'
+) or []
+  if isinstance(ram, dict):
+    ram = [ram]
+    
+ 
+  ram_details = [] #用來存每條 RAM 的詳細資訊
+  for item in ram:#逐條讀取 RAM 資料。
+    manufacturer = item.get('Manufacturer', 'Unknown')
+    model = item.get('PartNumber', 'Unknown')
+    capacity = item.get('Capacity', 0)
+    capacity_gb = round(capacity / (1024 ** 3))
+    speed = item.get('Speed', 0)
+    ram_details.append(
+        f'{manufacturer} {model} {capacity_gb}GB {speed}MHz'
+    )
+  ram_summary = '; '.join(ram_details)#把每條 RAM 的詳細資訊組成一個字串,
+
 
   bios = _run_powershell_json(
       'Get-CimInstance Win32_BIOS | Select-Object SerialNumber,SMBIOSBIOSVersion | ConvertTo-Json'
@@ -81,6 +101,7 @@ def _collect_windows_info(): #用PowerShell/CIM撈Windows的硬體資訊
       'cpu_name': cpu.get('Name', 'Unknown'),
       'cores_threads': f"{cpu.get('NumberOfCores', '?')}C/{cpu.get('NumberOfLogicalProcessors', '?')}T",
       'ram_gb': round(computer_system.get('TotalPhysicalMemory', 0) / (1024 ** 3), 1),
+      'ram_summary': ram_summary, #每條 RAM 的詳細資訊組成的字串
       'os_caption': os_info.get('Caption', 'Unknown'),
       'bios_version': bios.get('SMBIOSBIOSVersion', 'Unknown'),
       'disk_summary': disk_summary,
