@@ -14,11 +14,12 @@ def _run_powershell_json(command): #執行PowerShell指令並把JSON輸出轉成
         ['powershell', '-Command', command],
         capture_output=True,
         text=True,
-        encoding='big5' #跟專案其他模組一致，正確解碼中文字
+        encoding='big5', #跟專案其他模組一致，正確解碼中文字
+        errors='replace' #遇到無法解碼的位元組不要讓讀取執行緒崩潰
     )
     try:
         return json.loads(result.stdout)
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, TypeError):
         return None
 
 def _run_shell(command): #跑一個shell指令，回傳stdout文字，失敗回傳空字串
