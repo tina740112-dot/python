@@ -97,9 +97,9 @@ def start_usb_stress_test():
                             
                             
                             print('--'*30)
-                    print(f'Round: {round_count}')
+            print(f'Round: {round_count}')
                         
-                    round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
+            round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
                 
             print('--'*10+'USB Stress Test Completed'+'--'*10)
        
