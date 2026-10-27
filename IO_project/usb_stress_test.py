@@ -17,6 +17,8 @@ def start_usb_stress_test():
         
         disk_numbers = disk_number_result.stdout.splitlines()
         
+        usb_disks = {}# 使用字典儲存 USB 磁碟的資訊
+        
         for disk_number in disk_numbers:
                 print(f'USB Disk Number: {disk_number}')
                 
@@ -28,7 +30,11 @@ def start_usb_stress_test():
                                 encoding='big5'
                                 )
                 driveletter=driveletter_result.stdout.strip()
+                
+                usb_disks[disk_number] = driveletter# 將磁碟號與對應的磁碟機代號存入usb_disks字典
+                
                 print(f'drive letter:{driveletter}:')
+          
               
                 
                   
@@ -45,6 +51,8 @@ def start_usb_stress_test():
          # 請使用者輸入測試時間(分鐘)
         user_input_test_time=input('please enter the test time(minutes):')
         
+        print('--'*30)
+        
         if  not user_input_test_time.isdigit() or int(user_input_test_time) <= 0:
             print('Invalid test duration')
         else:
@@ -54,45 +62,77 @@ def start_usb_stress_test():
             
             start_time=time.monotonic()#取得目前的計時數值。
             end_time=start_time + test_seconds
-            round_count = 1
+            
+            round_count = 1# 記錄測試回合數
+            pass_count = 0# 記錄通過的測試次數
+            fail_count = 0# 記錄失敗的測試次數
             
           
             while time.monotonic() <= end_time:#現測試時間小於結束時間
-                try:
-                 for disk_number in disk_numbers:
-                    print('USB Stress Test Running')
-                    time.sleep(1)  # 每次執行後暫停 1 秒。
-    #建立 USB 測試資料夾
-                    test_folder=f'{driveletter}:\\USB_Stress_Test_Log'
-                    os.makedirs(test_folder,exist_ok=True)#test_folder：指定要建立的資料夾,exist_ok=True：如果資料夾已經存在
-                    test_day=datetime.now().strftime('%Y%m%d_%H%M%S')
-                    
-                    testdata_1MB=f'{test_folder}\\testdata_1MB_{test_day}_{round_count}.bin'
-                    print(testdata_1MB)
-                    
-                    
-                    test_data=os.urandom(1024 * 1024) #產生指定大小的隨機位元組資料 1 MB in bytes
-                    #print(len(test_data))
-                    
-                    with open(testdata_1MB,'xb') as f:#'xb'：以二進位模式建立新檔案，而且不會覆蓋已存在的同名檔案。
-                        f.write(test_data)
-                        
-                    #確認寫入的資料跟讀取的資料是否正確
-                    with open(testdata_1MB,'rb') as f:#'rb'：以二進位模式讀取檔案
-                        read_data=f.read()#讀取檔案內容
-                        
-                        if read_data == test_data:
-                            print('Data verification passed')
-                        else:
-                            print('Data verification failed')
-                        os.remove(testdata_1MB) #刪除測試檔案
-                        
-                        print('--'*30)
+                
                  print(f'Round: {round_count}')
+              
+                 for disk_number in disk_numbers:
+                    driveletter = usb_disks[disk_number]# 從字典中取得對應磁碟號的磁碟機代號
+                    
+                    testdata_1MB = None# 初始化測試檔案路徑變數，避免在 finally 區塊中出現未定義的錯誤
+                    
+                    try:
+                        # USB 讀寫測試
+                        print('USB Stress Test Running')
+                        print(f'Disk:{disk_number}-{driveletter}:')#顯示目前測試的磁碟號與磁碟機代號
+                        time.sleep(1)  # 每次執行後暫停 1 秒。
+                        #建立 USB 測試資料夾
+                        test_folder=f'{driveletter}:\\USB_Stress_Test_Log'
+                        os.makedirs(test_folder,exist_ok=True)#test_folder：指定要建立的資料夾,exist_ok=True：如果資料夾已經存在
+                        test_day=datetime.now().strftime('%Y%m%d_%H%M%S')
+                        
+                        testdata_1MB=f'{test_folder}\\testdata_1MB_{test_day}_{round_count}.bin'
+                        print(testdata_1MB)
+                        
+                        
+                        test_data=os.urandom(1024 * 1024) #產生指定大小的隨機位元組資料 1 MB in bytes
+                        #print(len(test_data))
+                        
+                        with open(testdata_1MB,'xb') as f:#'xb'：以二進位模式建立新檔案，而且不會覆蓋已存在的同名檔案。
+                            f.write(test_data)
+                            
+                        #確認寫入的資料跟讀取的資料是否正確
+                        with open(testdata_1MB,'rb') as f:#'rb'：以二進位模式讀取檔案
+                            read_data=f.read()#讀取檔案內容
+                            
+                            if read_data == test_data:
+                                print('Data verification passed')
+                                pass_count += 1# 通過的測試次數加 1
+                            else:
+                                print('Data verification failed')
+                                fail_count += 1# 失敗的測試次數加 1
+                           
+                    except OSError as error:
+                            print(f'{error}')
+                            fail_count += 1# 發生 OSError 時，失敗的測試次數加 1
+                            
+                    finally:
+                        try:
+                            if testdata_1MB is not None and os.path.exists(testdata_1MB):
+                                
+                                os.remove(testdata_1MB)# 刪除測試檔案
+                                print('Test file removed')# 刪除測試檔案成功
+                                
+                        except OSError as error:
+                            print(f'Cleanup failed: {error}')
+                        
+                                            
+                    print('--'*30)
+                    
+                
                     
                  round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
              
             print('--'*10+'USB Stress Test Completed'+'--'*10)
+            
+            total_tests=pass_count+fail_count# 計算總測試次數
+            print(f'Total test: {total_tests}, Passed: {pass_count}, Failed: {fail_count}')# 顯示測試結果
        
             
     
