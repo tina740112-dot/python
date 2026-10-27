@@ -129,11 +129,18 @@ def start_usb_stress_test():
                     
                  round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
              
-            print('--'*10+'USB Stress Test Completed'+'--'*10)
+            print('--'*10+'USB Stress Test Finished'+'--'*10)
             
             total_tests=pass_count+fail_count# 計算總測試次數
+            print('========== USB Stress Test Summary ==========')
             print(f'Total test: {total_tests}, Passed: {pass_count}, Failed: {fail_count}')# 顯示測試結果
-       
+            #最後判斷測試結果
+            if fail_count == 0 and total_tests > 0:
+                print('Result: PASS')
+            else:
+                print('Result: FAIL')
+                
+            print('\n' + '=' * 45 + '\n')
             
     
 
