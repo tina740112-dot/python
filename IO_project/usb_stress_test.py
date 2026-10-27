@@ -66,6 +66,8 @@ def start_usb_stress_test():
             round_count = 1# 記錄測試回合數
             pass_count = 0# 記錄通過的測試次數
             fail_count = 0# 記錄失敗的測試次數
+            usb_results = {}# 記錄每個 USB 磁碟的測試結果
+            
             
           
             while time.monotonic() <= end_time:#現測試時間小於結束時間
@@ -75,10 +77,25 @@ def start_usb_stress_test():
                  for disk_number in disk_numbers:
                     driveletter = usb_disks[disk_number]# 從字典中取得對應磁碟號的磁碟機代號
                     
+                    
+                    # 使用 setdefault() 方法，如果 usb_results 中沒有這個磁碟號，就建立預設值；如果已經有成績，就保留原本的數字。   
+                    # usb_results 中的每個磁碟號都會有 'pass'、'fail' 以及 'write_speeds' 三個欄位，分別記錄通過次數、失敗次數和寫入速度列表。
+                    usb_results.setdefault(disk_number,  {'pass': 0, 'fail': 0, 'write_speeds': []})
+                    #第一層：大字典 usb_results
+
+                    #第二層：Disk1 的小字典 {}
+
+                    #pass：0
+
+                    #fail：0
+
+                    #第三層：write_speeds → []
+                    
                     testdata_1MB = None# 初始化測試檔案路徑變數，避免在 finally 區塊中出現未定義的錯誤
                     
+                    # USB 讀寫測試
                     try:
-                        # USB 讀寫測試
+                       
                         print('USB Stress Test Running')
                         print(f'Disk:{disk_number}-{driveletter}:')#顯示目前測試的磁碟號與磁碟機代號
                         time.sleep(1)  # 每次執行後暫停 1 秒。
@@ -94,23 +111,45 @@ def start_usb_stress_test():
                         test_data=os.urandom(1024 * 1024) #產生指定大小的隨機位元組資料 1 MB in bytes
                         #print(len(test_data))
                         
+                        write_start=time.monotonic()# 記錄寫入開始的時間
+                        
+                        
+                        # 寫入測試檔案
                         with open(testdata_1MB,'xb') as f:#'xb'：以二進位模式建立新檔案，而且不會覆蓋已存在的同名檔案。
                             f.write(test_data)
                             
-                        #確認寫入的資料跟讀取的資料是否正確
+                        write_end=time.monotonic()# 記錄寫入結束的時間
+                        
+                        write_duration=write_end-write_start# 計算寫入所花費的時間
+                        
+                        write_speed=1024*1024/write_duration# 計算寫入速度，單位為 bytes/s
+                        
+                        # 將bytes/second的寫入速度換算成 MB/s
+                        write_speed_MB_s=write_speed/(1000*1000)
+                        
+                        
+                      
+                        print(f'Write speed: {write_speed_MB_s:.3f} MB/second')#印出輸出速度
+                        
+                        print(f'Write duration: {write_duration:.3f} seconds')#印出輸出時間
+                    
+                        #讀取檔案:::確認寫入的資料跟讀取的資料是否正確
                         with open(testdata_1MB,'rb') as f:#'rb'：以二進位模式讀取檔案
                             read_data=f.read()#讀取檔案內容
                             
                             if read_data == test_data:
                                 print('Data verification passed')
                                 pass_count += 1# 通過的測試次數加 1
+                                usb_results[disk_number]['pass'] += 1#找到目前這支 USB 的成績表，把成功次數加 1
                             else:
                                 print('Data verification failed')
                                 fail_count += 1# 失敗的測試次數加 1
+                                usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
                            
                     except OSError as error:
                             print(f'{error}')
                             fail_count += 1# 發生 OSError 時，失敗的測試次數加 1
+                            usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
                             
                     finally:
                         try:
@@ -132,7 +171,16 @@ def start_usb_stress_test():
             print('--'*10+'USB Stress Test Finished'+'--'*10)
             
             total_tests=pass_count+fail_count# 計算總測試次數
+            
             print('========== USB Stress Test Summary ==========')
+            
+            for disk_number,result in usb_results.items():#.items()同時取出字典的 key 和 value
+                   driveletter = usb_disks[disk_number]# 取得目前 USB 的磁碟代號
+                   print(f'Disk{disk_number}({driveletter}:)')# 顯示目前 USB 的磁碟代號
+                   print(f'Passed:{result["pass"]}')# use key get USB 的成功次數並顯示
+                   print(f'Failed:{result["fail"]}')# use key get USB 的失敗次數並顯示
+                   print()#下一行
+            
             print(f'Total test: {total_tests}, Passed: {pass_count}, Failed: {fail_count}')# 顯示測試結果
             #最後判斷測試結果
             if fail_count == 0 and total_tests > 0:
