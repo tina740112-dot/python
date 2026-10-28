@@ -126,6 +126,11 @@ def start_usb_stress_test():
                         
                         # 將bytes/second的寫入速度換算成 MB/s
                         write_speed_MB_s=write_speed/(1000*1000)
+                         #先用 disk_number 找到該磁碟的 write_speeds 清單，再把 write_speed_MB_s 加到清單末端。
+                        usb_results[disk_number]['write_speeds'].append(write_speed_MB_s)
+                       
+            
+                        
                         
                         
                       
@@ -159,11 +164,7 @@ def start_usb_stress_test():
                                 print('Test file removed')# 刪除測試檔案成功
                                 
                         except OSError as error:
-                            print(f'Cleanup failed: {error}')
-                        
-                                            
-                    print('--'*30)
-                    
+                            print(f'Cleanup failed: {error}')                    
                 
                     
                  round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
