@@ -142,6 +142,9 @@ def start_usb_stress_test():
                         with open(testdata_1MB,'rb') as f:#'rb'：以二進位模式讀取檔案
                             read_data=f.read()#讀取檔案內容
                             
+                            read_start = time.monotonic()
+                            
+                            
                             if read_data == test_data:
                                 print('Data verification passed')
                                 pass_count += 1# 通過的測試次數加 1
@@ -150,6 +153,7 @@ def start_usb_stress_test():
                                 print('Data verification failed')
                                 fail_count += 1# 失敗的測試次數加 1
                                 usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
+                                read_end = time.monotonic()
                            
                     except OSError as error:
                             print(f'{error}')
@@ -180,6 +184,10 @@ def start_usb_stress_test():
                    print(f'Disk{disk_number}({driveletter}:)')# 顯示目前 USB 的磁碟代號
                    print(f'Passed:{result["pass"]}')# use key get USB 的成功次數並顯示
                    print(f'Failed:{result["fail"]}')# use key get USB 的失敗次數並顯示
+                   if len(result['write_speeds'])>0:# 如果有寫入速度的紀錄，才顯示最小、最大和平均寫入速度
+                       print(f'write speed min: {min(result["write_speeds"]):.3f} MB/s')# 顯示最小寫入速度
+                       print(f'write speed max: {max(result["write_speeds"]):.3f} MB/s')# 顯示最大寫入速度
+                       print(f'write speed avg: {sum(result["write_speeds"]) / len(result["write_speeds"]):.3f} MB/s')# 計算並顯示平均寫入速度
                    print()#下一行
             
             print(f'Total test: {total_tests}, Passed: {pass_count}, Failed: {fail_count}')# 顯示測試結果
