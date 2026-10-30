@@ -2,6 +2,7 @@ import subprocess
 from datetime import datetime
 import time
 import os
+import csv
 
 def start_usb_stress_test():
    
@@ -80,7 +81,7 @@ def start_usb_stress_test():
                     
                     # 使用 setdefault() 方法，如果 usb_results 中沒有這個磁碟號，就建立預設值；如果已經有成績，就保留原本的數字。   
                     # usb_results 中的每個磁碟號都會有 'pass'、'fail' 以及 'write_speeds' 三個欄位，分別記錄通過次數、失敗次數和寫入速度列表。
-                    usb_results.setdefault(disk_number,  {'pass': 0, 'fail': 0, 'write_speeds': []})
+                    usb_results.setdefault(disk_number,  {'pass': 0, 'fail': 0, 'write_speeds': [],'read_speeds': []})
                     #第一層：大字典 usb_results
 
                     #第二層：Disk1 的小字典 {}
@@ -137,23 +138,32 @@ def start_usb_stress_test():
                         print(f'Write speed: {write_speed_MB_s:.3f} MB/second')#印出輸出速度
                         
                         print(f'Write duration: {write_duration:.3f} seconds')#印出輸出時間
+                        
+                        read_start = time.monotonic()# 記錄讀取開始的時間
                     
                         #讀取檔案:::確認寫入的資料跟讀取的資料是否正確
                         with open(testdata_1MB,'rb') as f:#'rb'：以二進位模式讀取檔案
                             read_data=f.read()#讀取檔案內容
                             
-                            read_start = time.monotonic()
-                            
-                            
-                            if read_data == test_data:
+                        read_end = time.monotonic()# 記錄讀取結束的時間
+                        read_duration = read_end - read_start# 計算讀取時間
+                        read_speed_MB_s=(1024*1024/read_duration)/(1000*1000)# 計算讀取速度 MB/s)
+                        # 將讀取速度加入目前 USB 的成績表
+                        usb_results[disk_number]['read_speeds'].append(read_speed_MB_s)
+
+                        if read_data == test_data:
                                 print('Data verification passed')
                                 pass_count += 1# 通過的測試次數加 1
                                 usb_results[disk_number]['pass'] += 1#找到目前這支 USB 的成績表，把成功次數加 1
-                            else:
+                        else:
                                 print('Data verification failed')
                                 fail_count += 1# 失敗的測試次數加 1
                                 usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
-                                read_end = time.monotonic()
+                               
+                                
+                        print(f'Read speed: {read_speed_MB_s:.3f} MB/second')#印出讀取速度
+                        print(f'Read duration: {read_duration:.3f} seconds')#印出讀取時間
+                        
                            
                     except OSError as error:
                             print(f'{error}')
@@ -188,7 +198,12 @@ def start_usb_stress_test():
                        print(f'write speed min: {min(result["write_speeds"]):.3f} MB/s')# 顯示最小寫入速度
                        print(f'write speed max: {max(result["write_speeds"]):.3f} MB/s')# 顯示最大寫入速度
                        print(f'write speed avg: {sum(result["write_speeds"]) / len(result["write_speeds"]):.3f} MB/s')# 計算並顯示平均寫入速度
-                   print()#下一行
+                   if len(result['read_speeds'])>0:# 如果有讀取速度的紀錄，才顯示最小、最大和平均讀取速度
+                        print(f'read speed min: {min(result["read_speeds"]):.3f} MB/s')# 顯示最小讀取速度
+                        print(f'read speed max: {max(result["read_speeds"]):.3f} MB/s')# 顯示最大讀取速度
+                        print(f'read speed avg: {sum(result["read_speeds"]) / len(result["read_speeds"]):.3f} MB/s')# 計算並顯示平均讀取速度
+            
+            
             
             print(f'Total test: {total_tests}, Passed: {pass_count}, Failed: {fail_count}')# 顯示測試結果
             #最後判斷測試結果
@@ -196,6 +211,9 @@ def start_usb_stress_test():
                 print('Result: PASS')
             else:
                 print('Result: FAIL')
+                
+        with open('USB_Stress_Test_Result.csv', mode='w', encoding='utf-8') as f: 
+            f.write('pass')
                 
             print('\n' + '=' * 45 + '\n')
             
