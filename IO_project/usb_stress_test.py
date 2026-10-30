@@ -213,8 +213,10 @@ def start_usb_stress_test():
                 print('Result: FAIL')
                 
         with open('USB_Stress_Test_Result.csv', mode='w', encoding='utf-8') as f: 
-            f.write('pass')
-                
+            csv_writer = csv.writer(f)
+            
+            
+            
             print('\n' + '=' * 45 + '\n')
             
     
