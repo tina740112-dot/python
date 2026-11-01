@@ -212,9 +212,13 @@ def start_usb_stress_test():
             else:
                 print('Result: FAIL')
                 
-        with open('USB_Stress_Test_Result.csv', mode='w', encoding='utf-8') as f: 
+        csv_file_path = 'USB_Stress_Test_Result.csv'
+        file_exists = os.path.exists(csv_file_path)
+        
+        with open(csv_file_path, mode='a', encoding='utf-8', newline='') as f: 
             csv_writer = csv.writer(f)
-            csv_writer.writerow(['Disk','Total','Passed','Failed','Write Min','Write Max','Write Avg','Read Min','Read Max','Read Avg','Result'])#寫標題
+            if not file_exists:
+                csv_writer.writerow(['Test Time','Disk','Total','Passed','Failed','Write Min','Write Max','Write Avg','Read Min','Read Max','Read Avg','Result'])
 
             for disk_number,result in usb_results.items():
                  driveletter=usb_disks[disk_number]
@@ -225,23 +229,24 @@ def start_usb_stress_test():
 
                  Failed=result["fail"]
 
-                 Write_Min=min(result[write_speed])
+                 test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
-                 csv_writer.writerow([driveletter,Total,Passed,Failed,Write_Min])
-                                  
-                                      
-              
+                 if len(result['write_speeds']) > 0:
+                   Write_Min = round(min(result['write_speeds']), 3)
+                   Write_Max = round(max(result['write_speeds']), 3)
+                   Write_Avg = round(sum(result['write_speeds']) / len(result['write_speeds']), 3)
+                 else:
+                    Write_Min = Write_Max = Write_Avg = 'N/A'
+
+                 if len(result['read_speeds']) > 0:
+                    Read_Min = round(min(result['read_speeds']), 3)
+                    Read_Max = round(max(result['read_speeds']), 3)
+                    Read_Avg = round(sum(result['read_speeds']) / len(result['read_speeds']), 3)
+                 else:
+                    Read_Min = Read_Max = Read_Avg = 'N/A'
+
+                 Result = 'PASS' if Failed == 0 and Total > 0 else 'FAIL'
                  
-
-
-
-
-            
-            
+                 csv_writer.writerow([test_time, driveletter, Total, Passed, Failed, Write_Min, Write_Max, Write_Avg, Read_Min, Read_Max, Read_Avg, Result])
             
             print('\n' + '=' * 45 + '\n')
-            
-    
-
-            
-        
