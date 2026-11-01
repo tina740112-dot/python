@@ -214,6 +214,28 @@ def start_usb_stress_test():
                 
         with open('USB_Stress_Test_Result.csv', mode='w', encoding='utf-8') as f: 
             csv_writer = csv.writer(f)
+            csv_writer.writerow(['Disk','Total','Passed','Failed','Write Min','Write Max','Write Avg','Read Min','Read Max','Read Avg','Result'])#寫標題
+
+            for disk_number,result in usb_results.items():
+                 driveletter=usb_disks[disk_number]
+                
+                 Total=result["pass"] + result["fail"]
+
+                 Passed=result["pass"]
+
+                 Failed=result["fail"]
+
+                 Write_Min=min(result[write_speed])
+
+                 csv_writer.writerow([driveletter,Total,Passed,Failed,Write_Min])
+                                  
+                                      
+              
+                 
+
+
+
+
             
             
             
