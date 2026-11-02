@@ -3,8 +3,10 @@ from datetime import datetime
 import time
 import os
 import csv
+import json
+import platform
 
-def start_usb_stress_test():
+def _start_usb_stress_test_windows():
    
         disk_number_result = subprocess.run(
             ['powershell',
@@ -232,16 +234,16 @@ def start_usb_stress_test():
                  test_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
 
                  if len(result['write_speeds']) > 0:
-                   Write_Min = round(min(result['write_speeds']), 3)
-                   Write_Max = round(max(result['write_speeds']), 3)
-                   Write_Avg = round(sum(result['write_speeds']) / len(result['write_speeds']), 3)
+                    Write_Min = min(result['write_speeds'])
+                    Write_Max = max(result['write_speeds'])
+                    Write_Avg = sum(result['write_speeds']) / len(result['write_speeds'])
                  else:
                     Write_Min = Write_Max = Write_Avg = 'N/A'
 
                  if len(result['read_speeds']) > 0:
-                    Read_Min = round(min(result['read_speeds']), 3)
-                    Read_Max = round(max(result['read_speeds']), 3)
-                    Read_Avg = round(sum(result['read_speeds']) / len(result['read_speeds']), 3)
+                    Read_Min = min(result['read_speeds'])
+                    Read_Max = max(result['read_speeds'])
+                    Read_Avg = sum(result['read_speeds']) / len(result['read_speeds'])
                  else:
                     Read_Min = Read_Max = Read_Avg = 'N/A'
 
@@ -250,3 +252,160 @@ def start_usb_stress_test():
                  csv_writer.writerow([test_time, driveletter, Total, Passed, Failed, Write_Min, Write_Max, Write_Avg, Read_Min, Read_Max, Read_Avg, Result])
             
             print('\n' + '=' * 45 + '\n')
+
+
+# Linux 使用 lsblk 偵測 USB 磁碟（不測試內建系統磁碟）
+def _detect_usb_targets_linux():
+    try:
+        proc = subprocess.run(
+            ['lsblk', '-J', '-o', 'NAME,TRAN,MODEL,MOUNTPOINT,TYPE'],
+            capture_output=True, text=True, check=True
+        )
+        devices = json.loads(proc.stdout).get('blockdevices', [])
+    except (FileNotFoundError, subprocess.CalledProcessError, json.JSONDecodeError) as error:
+        print(f'Cannot detect Linux USB disks: {error}')
+        return []
+
+    targets = []
+
+    def mounted_parts(device):
+        # USB disks typically contain partition children. Handle nested structures as well.
+        if device.get('mountpoint') and device.get('type') != 'disk':
+            yield device
+        for child in device.get('children') or []:
+            yield from mounted_parts(child)
+
+    for device in devices:
+        if (device.get('tran') or '').lower() != 'usb':
+            continue
+        model = (device.get('model') or 'USB Disk').strip()
+        parts = list(mounted_parts(device))
+        # Some removable devices are formatted without a partition table.
+        if not parts and device.get('mountpoint'):
+            parts = [device]
+        for part in parts:
+            mountpoint = part.get('mountpoint')
+            # Never target / or other system paths accidentally.
+            if not mountpoint or mountpoint in ('/', '/boot', '/boot/efi'):
+                continue
+            if not os.path.isdir(mountpoint):
+                continue
+            targets.append((f"/dev/{part['name']}", mountpoint, model))
+    return targets
+
+
+def _start_usb_stress_test_linux():
+    targets = _detect_usb_targets_linux()
+    if not targets:
+        print('No mounted USB storage disks found. Please mount the USB drive first.')
+        return
+
+    print('=== Linux USB Stress Test ===')
+    for device, mountpoint, model in targets:
+        print(f'{device} ({model}) -> {mountpoint}')
+
+    # A write test changes the contents of a drive, so require explicit confirmation.
+    if input('Test ALL listed USB drives? Type YES to continue: ').strip() != 'YES':
+        print('USB Stress Test cancelled')
+        return
+
+    duration_text = input('Please enter the test time (minutes): ').strip()
+    if not duration_text.isdigit() or int(duration_text) <= 0:
+        print('Invalid test duration')
+        return
+
+    duration = int(duration_text) * 60
+    deadline = time.monotonic() + duration
+    results = {device: {'pass': 0, 'fail': 0, 'write_speeds': [], 'read_speeds': []}
+               for device, _, _ in targets}
+    count = 0
+
+    while time.monotonic() < deadline:
+        count += 1
+        print(f'Round: {count}')
+        for device, mountpoint, model in targets:
+            # Create the test file ONLY inside the USB mountpoint.
+            folder = os.path.join(mountpoint, 'USB_Stress_Test_Log')
+            file_path = None
+            print(f'USB: {device} -> {mountpoint}')
+            try:
+                os.makedirs(folder, exist_ok=True)
+                filename = f"testdata_1MB_{datetime.now():%Y%m%d_%H%M%S_%f}_{count}.bin"
+                file_path = os.path.join(folder, filename)
+                test_data = os.urandom(1024 * 1024)
+
+                write_start = time.monotonic()
+                with open(file_path, 'xb') as f:
+                    f.write(test_data)
+                    f.flush()
+                    os.fsync(f.fileno())  # Reduce misleading write-cache measurements.
+                write_duration = max(time.monotonic() - write_start, 1e-9)
+                write_speed = (len(test_data) / 1_000_000) / write_duration
+                results[device]['write_speeds'].append(write_speed)
+
+                read_start = time.monotonic()
+                with open(file_path, 'rb') as f:
+                    read_data = f.read()
+                read_duration = max(time.monotonic() - read_start, 1e-9)
+                read_speed = (len(read_data) / 1_000_000) / read_duration
+                results[device]['read_speeds'].append(read_speed)
+
+                correct = read_data == test_data
+                results[device]['pass' if correct else 'fail'] += 1
+                print(f'Write speed: {write_speed:.3f} MB/s')
+                print(f'Read speed:  {read_speed:.3f} MB/s')
+                print(f'Data verification: {"PASS" if correct else "FAIL"}')
+            except OSError as error:
+                results[device]['fail'] += 1
+                print(f'USB read/write test failed: {error}')
+            finally:
+                if file_path and os.path.isfile(file_path):
+                    try:
+                        os.remove(file_path)
+                        print('Test file removed')
+                    except OSError as error:
+                        results[device]['fail'] += 1
+                        print(f'Cleanup failed: {error}')
+
+    print('========== USB Stress Test Summary ==========')
+    report = 'USB_Stress_Test_Result.csv'
+    file_exists = os.path.isfile(report) and os.path.getsize(report) > 0
+    with open(report, 'a', newline='', encoding='utf-8') as f:
+        writer = csv.writer(f)
+        if not file_exists:
+            writer.writerow(['Test Time', 'Disk', 'Total', 'Passed', 'Failed',
+                             'Write Min', 'Write Max', 'Write Avg',
+                             'Read Min', 'Read Max', 'Read Avg', 'Result'])
+
+        def speed_stats(values):
+            if not values:
+                return ('N/A', 'N/A', 'N/A')
+            return (f'{min(values):.3f}', f'{max(values):.3f}',
+                    f'{sum(values) / len(values):.3f}')
+
+        for device, mountpoint, model in targets:
+            outcome = results[device]
+            passed, failed = outcome['pass'], outcome['fail']
+            total = passed + failed
+            write_min, write_max, write_avg = speed_stats(outcome['write_speeds'])
+            read_min, read_max, read_avg = speed_stats(outcome['read_speeds'])
+            status = 'PASS' if total > 0 and failed == 0 else 'FAIL'
+            print(f'{device} ({mountpoint})  Total:{total} Passed:{passed} Failed:{failed}  Result:{status}')
+            print(f'  Write Min/Max/Avg: {write_min}/{write_max}/{write_avg} MB/s')
+            print(f'  Read  Min/Max/Avg: {read_min}/{read_max}/{read_avg} MB/s')
+            writer.writerow([datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+                             f'{device} ({mountpoint})', total, passed, failed,
+                             write_min, write_max, write_avg,
+                             read_min, read_max, read_avg, status])
+    print(f'CSV report saved: {os.path.abspath(report)}')
+    print('Note: Linux read speeds may be inflated by the OS page cache.')
+
+
+def start_usb_stress_test():
+    # Keep main.py unchanged: it calls this function on both platforms.
+    system = platform.system()
+    if system == 'Windows':
+        return _start_usb_stress_test_windows()
+    if system == 'Linux':
+        return _start_usb_stress_test_linux()
+    print(f'Unsupported system: {system}')
