@@ -5,11 +5,11 @@ from lan_ping_test import start_lan_test #從 lan_test.py 匯入 start_lan_test 
 from lan_ping_test import get_lan_adapter #從 lan_test.py 匯入 get_lan_adapter 函式
 from lan_stress_test import start_lan_stress_test #從 lan_stress_test.py 匯入 start_lan_stress_test 函式
 from system_info_test import start_system_info_test #從 system_info_test.py 匯入 start_system_info_test 函式
-from usb_stress_test import start_usb_stress_test
+from usb_stress_test_old import start_usb_stress_test
 from web_lookup import start_web_lookup #從 web_lookup.py 匯入 start_web_lookup 函式
 
 
-print("===Peripheral Test Tool===")
+print('==='*10+'Peripheral Test Tool'+'==='*10)
 #platform.system()platform的system確認作業系統
 os_name=platform.system()#取得作業系統名稱並存入 os_name
 print(os_name)
@@ -23,6 +23,7 @@ else:
 ################ test list#######################
 while True:
       try:
+        print('\n' + '==='*10 + 'Peripheral Test List' + '==='*10)
         print('1:USB Test\n'
               '2:LAN Ping Test\n'
               #'3:LAN Stress Test\n'
