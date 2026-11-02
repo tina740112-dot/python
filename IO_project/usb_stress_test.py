@@ -5,6 +5,7 @@ import os
 import csv
 import json
 import platform
+from concurrent.futures import ThreadPoolExecutor # 用於多線程執行 USB 壓力測試
 
 def _start_usb_stress_test_windows():
    
@@ -72,30 +73,33 @@ def _start_usb_stress_test_windows():
             usb_results = {}# 記錄每個 USB 磁碟的測試結果
             
             
+            def test_single_usb(disk_number, end_time):# 建立函式，接收 USB 編號和測試結束時間。測試單一 USB 磁碟的讀寫性能
           
-            while time.monotonic() <= end_time:#現測試時間小於結束時間
+                while time.monotonic() <= end_time:#現測試時間小於結束時間
+                    print(f'Testing USB Disk {disk_number}')
+                    driveletter = usb_disks[disk_number]#根據指定的 USB 磁碟編號，取得對應的磁碟機代號。
                 
-                 print(f'Round: {round_count}')
-              
-                 for disk_number in disk_numbers:
-                    driveletter = usb_disks[disk_number]# 從字典中取得對應磁碟號的磁碟機代號
-                    
-                    
-                    # 使用 setdefault() 方法，如果 usb_results 中沒有這個磁碟號，就建立預設值；如果已經有成績，就保留原本的數字。   
-                    # usb_results 中的每個磁碟號都會有 'pass'、'fail' 以及 'write_speeds' 三個欄位，分別記錄通過次數、失敗次數和寫入速度列表。
-                    usb_results.setdefault(disk_number,  {'pass': 0, 'fail': 0, 'write_speeds': [],'read_speeds': []})
-                    #第一層：大字典 usb_results
+                    print(f'Round: {round_count}')
+                
+                    for disk_number in disk_numbers:
+                        driveletter = usb_disks[disk_number]# 從字典中取得對應磁碟號的磁碟機代號
+                        
+                        
+                        # 使用 setdefault() 方法，如果 usb_results 中沒有這個磁碟號，就建立預設值；如果已經有成績，就保留原本的數字。   
+                        # usb_results 中的每個磁碟號都會有 'pass'、'fail' 以及 'write_speeds' 三個欄位，分別記錄通過次數、失敗次數和寫入速度列表。
+                        usb_results.setdefault(disk_number,  {'pass': 0, 'fail': 0, 'write_speeds': [],'read_speeds': []})
+                        #第一層：大字典 usb_results
 
-                    #第二層：Disk1 的小字典 {}
+                        #第二層：Disk1 的小字典 {}
 
-                    #pass：0
+                        #pass：0
 
-                    #fail：0
+                        #fail：0
 
-                    #第三層：write_speeds → []
-                    
-                    testdata_1MB = None# 初始化測試檔案路徑變數，避免在 finally 區塊中出現未定義的錯誤
-                    
+                        #第三層：write_speeds → []
+                        
+                        testdata_1MB = None# 初始化測試檔案路徑變數，避免在 finally 區塊中出現未定義的錯誤
+                        
                     # USB 讀寫測試
                     try:
                        
