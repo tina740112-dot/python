@@ -64,9 +64,7 @@ def _start_usb_stress_test_windows():
             
             test_seconds = int(user_input_test_time) * 60 
             
-            start_time=time.monotonic()#取得目前的計時數值。
-            end_time=start_time + test_seconds
-            
+           
             round_count = 1# 記錄測試回合數
             pass_count = 0# 記錄通過的測試次數
             fail_count = 0# 記錄失敗的測試次數
@@ -154,15 +152,18 @@ def _start_usb_stress_test_windows():
                         read_duration = read_end - read_start# 計算讀取時間
                         read_speed_MB_s=(1024*1024/read_duration)/(1000*1000)# 計算讀取速度 MB/s)
                         # 將讀取速度加入目前 USB 的成績表
+                        
+                        
+                        
                         usb_results[disk_number]['read_speeds'].append(read_speed_MB_s)
 
                         if read_data == test_data:
                                 print('Data verification passed')
-                                pass_count += 1# 通過的測試次數加 1
+                                
                                 usb_results[disk_number]['pass'] += 1#找到目前這支 USB 的成績表，把成功次數加 1
                         else:
                                 print('Data verification failed')
-                                fail_count += 1# 失敗的測試次數加 1
+                                
                                 usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
                                 
                                 
@@ -172,7 +173,7 @@ def _start_usb_stress_test_windows():
                             
                     except OSError as error:
                             print(f'{error}')
-                            fail_count += 1# 發生 OSError 時，失敗的測試次數加 1
+                          
                             usb_results[disk_number]['fail'] += 1#找到目前這支 USB 的成績表，把失敗次數加 1
                             
                     finally:
@@ -183,16 +184,42 @@ def _start_usb_stress_test_windows():
                                 print('Test file removed')# 刪除測試檔案成功
                                 
                         except OSError as error:
-                            print(f'Cleanup failed: {error}')                    
+                               print(f'Cleanup failed: {error}') # 顯示清理失敗的錯誤訊息
+                               usb_results[disk_number]['fail'] += 1 ## 找到目前 USB 的成績表，將清理失敗次數加 1
                     
                         
                     round_count = round_count + 1#每完成一輪所有 USB 的測試，回合數加 1
-             
+                    
+            start_time=time.monotonic()#取得目前的計時數值。
+            end_time=start_time + test_seconds
+                                
+            
+            with ThreadPoolExecutor(max_workers=len(disk_numbers)) as executor:#利用多線程同時測試多個 USB
+                futures = {}# 用來存放每個提交的任務
+                
+                for disk_number in disk_numbers:# 對每個 USB 磁碟編號提交測試任務,提交工作，讓所有usb 可以並行測試。
+                    futures[disk_number] = executor.submit(test_single_usb, disk_number, end_time)# 提交測試任務給執行緒池，並將返回的 future 物件加入 futures 字典
+                    
+                    for disk_number, future in futures.items():
+                        try:
+                            future.result()
+                        except Exception as error: # 利用 except Exception 捕捉執行緒發生的例外錯誤
+                            print(f'USB Disk {disk_number} worker error: {error}') # 利用 f-string 顯示 USB 編號及錯誤訊息
+                        
+                            usb_results.setdefault(
+                            disk_number,
+                            {'pass': 0, 'fail': 0, 'write_speeds': [], 'read_speeds': []}
+                        )['fail'] += 1        
+                          
             print('--'*10+'USB Stress Test Finished'+'--'*10)
             
-            total_tests=pass_count+fail_count# 計算總測試次數
+           
             
             print('========== USB Stress Test Summary ==========')
+            
+            pass_count = sum(result['pass'] for result in usb_results.values())# 使用 sum 跟result的list計算所有 USB 的總通過次數
+            fail_count = sum(result['fail'] for result in usb_results.values())# 使用 sum 跟result的list計算所有 USB 的總失敗次數
+            total_tests=pass_count+fail_count# 計算總測試次數
             
             for disk_number,result in usb_results.items():#.items()同時取出字典的 key 和 value
                    driveletter = usb_disks[disk_number]# 取得目前 USB 的磁碟代號
