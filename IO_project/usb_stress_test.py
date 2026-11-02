@@ -109,7 +109,7 @@ def _start_usb_stress_test_windows():
                         test_day=datetime.now().strftime('%Y%m%d_%H%M%S')
                         
                         testdata_1MB=f'{test_folder}\\testdata_1MB_{test_day}_{round_count}.bin'
-                        print(testdata_1MB)
+                        print(f'Disk {disk_number} Test File: {testdata_1MB}')
                         
                         
                         test_data=os.urandom(1024 * 1024) #產生指定大小的隨機位元組資料 1 MB in bytes
@@ -198,19 +198,22 @@ def _start_usb_stress_test_windows():
                 futures = {}# 用來存放每個提交的任務
                 
                 for disk_number in disk_numbers:# 對每個 USB 磁碟編號提交測試任務,提交工作，讓所有usb 可以並行測試。
+                    
+                    print(f'Submitting USB Disk {disk_number}')  # 顯示提交給執行緒池的 USB 磁碟編號
+                    
                     futures[disk_number] = executor.submit(test_single_usb, disk_number, end_time)# 提交測試任務給執行緒池，並將返回的 future 物件加入 futures 字典
                     
-                    for disk_number, future in futures.items():
-                        try:
-                            future.result()
-                        except Exception as error: # 利用 except Exception 捕捉執行緒發生的例外錯誤
-                            print(f'USB Disk {disk_number} worker error: {error}') # 利用 f-string 顯示 USB 編號及錯誤訊息
+                for disk_number, future in futures.items():
+                    try:
+                        future.result()
+                    except Exception as error: # 利用 except Exception 捕捉執行緒發生的例外錯誤
+                        print(f'USB Disk {disk_number} worker error: {error}') # 利用 f-string 顯示 USB 編號及錯誤訊息
+                    
+                        usb_results.setdefault(
+                        disk_number,
+                        {'pass': 0, 'fail': 0, 'write_speeds': [], 'read_speeds': []}
+                    )['fail'] += 1        
                         
-                            usb_results.setdefault(
-                            disk_number,
-                            {'pass': 0, 'fail': 0, 'write_speeds': [], 'read_speeds': []}
-                        )['fail'] += 1        
-                          
             print('--'*10+'USB Stress Test Finished'+'--'*10)
             
            
@@ -280,8 +283,8 @@ def _start_usb_stress_test_windows():
                  Result = 'PASS' if Failed == 0 and Total > 0 else 'FAIL'
                  
                  csv_writer.writerow([test_time, driveletter, Total, Passed, Failed, Write_Min, Write_Max, Write_Avg, Read_Min, Read_Max, Read_Avg, Result])
-            
-            print('\n' + '=' * 45 + '\n')
+        print(f'CSV Result saved to: {os.path.abspath(csv_file_path)}')  # 顯示 CSV 報告的完整儲存路徑
+        print('\n' + '=' * 45 + '\n')
 
 
 # Linux 使用 lsblk 偵測 USB 磁碟（不測試內建系統磁碟）
