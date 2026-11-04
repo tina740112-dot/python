@@ -352,12 +352,15 @@ def _start_usb_stress_test_linux():
     results = {device: {'pass': 0, 'fail': 0, 'write_speeds': [], 'read_speeds': []}
                for device, _, _ in targets}
     count = 0
+    
+    def test_single_usb(device, mountpoint, model):
+        count = 0
 
-    while time.monotonic() < deadline:
-        count += 1
-        print(f'Round: {count}')
-        for device, mountpoint, model in targets:
-            # Create the test file ONLY inside the USB mountpoint.
+        while time.monotonic() < deadline:
+            count += 1
+            print(f'Round: {count}')
+            
+            #Create the test file ONLY inside the USB mountpoint.
             folder = os.path.join(mountpoint, 'USB_Stress_Test_Log')
             file_path = None
             print(f'USB: {device} -> {mountpoint}')
@@ -399,6 +402,20 @@ def _start_usb_stress_test_linux():
                     except OSError as error:
                         results[device]['fail'] += 1
                         print(f'Cleanup failed: {error}')
+                        
+    with ThreadPoolExecutor(max_workers=len(targets)) as executor:
+        futures = []
+
+    for device, mountpoint, model in targets:
+        futures.append(
+            executor.submit(test_single_usb, device, mountpoint, model)
+        )
+
+    for future in futures:
+        future.result()
+                        
+                        
+                        
 
     print('========== USB Stress Test Summary ==========')
     report = 'USB_Stress_Test_Result.csv'
