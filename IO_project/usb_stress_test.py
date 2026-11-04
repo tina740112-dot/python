@@ -403,17 +403,17 @@ def _start_usb_stress_test_linux():
                         results[device]['fail'] += 1
                         print(f'Cleanup failed: {error}')
                         
-    with ThreadPoolExecutor(max_workers=len(targets)) as executor:
-        futures = []
+        with ThreadPoolExecutor(max_workers=len(targets)) as executor:
+            futures = []
 
-    for device, mountpoint, model in targets:
-        futures.append(
-            executor.submit(test_single_usb, device, mountpoint, model)
-        )
+            for device, mountpoint, model in targets:
+                futures.append(
+                    executor.submit(test_single_usb, device, mountpoint, model)
+                )
 
-    for future in futures:
-        future.result()
-                        
+            for future in futures:
+                future.result()
+                            
                         
                         
 
