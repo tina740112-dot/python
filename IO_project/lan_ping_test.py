@@ -186,6 +186,7 @@ def start_lan_test():
     with open(log_file,mode='a',newline='',encoding='utf-8-sig') as f:
         writer=csv.writer(f)#建立一個 CSV 寫入工具，讓它負責把資料寫進檔案 f
         writer.writerow([test_time,target_ip,lost_number,ping_status])
+    print(f'CSV Result saved to: {os.path.abspath(log_file)}')
         
 
         

@@ -219,5 +219,5 @@ GPU           : {gpu_summary}
     writer.writerow([test_time, manufacturer, model, serial_number, cpu_name, cores_threads,
                       ram_gb, ram_summary,os_caption, bios_version, disk_summary, gpu_summary])
 
-  print(f'Result saved to {csv_file}')
+  print(f'CSV Result saved to: {os.path.abspath(csv_file)}')
 

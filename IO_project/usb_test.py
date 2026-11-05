@@ -268,7 +268,7 @@ def start_usb_test():
       with open(csv_file,mode='a',newline='',encoding='utf-8-sig') as f:
          writer=csv.writer(f)
          writer.writerow([test_time,usbname,driveletter,f'{write_speed_avg:.2f}',f'{read_speed_avg:.2f}',result])
-
+      print(f'CSV Result saved to: {os.path.abspath(csv_file)}')
       # 刪除本次 USB 測試產生的檔案
       #join把資料夾路徑和檔案名稱組合成一個完整路徑。
       test_file = os.path.join(test_folder, 'write_test.txt')
