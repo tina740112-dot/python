@@ -29,7 +29,7 @@ while True:
               #'3:LAN Stress Test\n'
               '3:System Hardware Overview\n'
               '4:USB Stress Test\n'
-              '5:Web Warranty Lookup'
+              #'5:Web Warranty Lookup'
               )
  
         user=int(input('Please select option 1/2/3/4/5:'))
@@ -54,8 +54,8 @@ while True:
         elif user==4:
           start_usb_stress_test()
 
-        elif user==5:
-          start_web_lookup()
+        #elif user==5:
+        #  start_web_lookup()
           
         else:
           print('Invalid option')
